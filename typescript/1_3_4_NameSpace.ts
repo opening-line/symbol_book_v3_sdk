@@ -8,6 +8,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
+import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
 //dotenvの設定
 dotenv.config()
@@ -79,7 +80,7 @@ const innerTransactions = txs.map((tx) =>
 const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
-const aggregateDes = new descriptors.AggregateCompleteTransactionV2Descriptor(
+const aggregateDescriptor = new descriptors.AggregateCompleteTransactionV2Descriptor(
   innerTransactionHash,
   innerTransactions,
 )
@@ -87,7 +88,7 @@ const aggregateDes = new descriptors.AggregateCompleteTransactionV2Descriptor(
 const tx = models.AggregateCompleteTransactionV2.deserialize(
   facade
     .createTransactionFromTypedDescriptor(
-      aggregateDes,
+      aggregateDescriptor,
       accountA.publicKey,
       100,
       60 * 60 * 2,
@@ -109,23 +110,6 @@ const response = await fetch(new URL("/transactions", NODE_URL), {
 
 console.log({ response })
 
-const hash = facade.hashTransaction(tx).toString()
+const hash = facade.hashTransaction(tx)
 
-//トランザクションの状態を確認できる
-console.log(`トランザクションステータス`)
-console.log(`${NODE_URL}/transactionStatus/${hash}`)
-
-// Txがconfirmed状態になるまで10秒ごとに状態を確認
-let txInfo
-do {
-  txInfo = await fetch(new URL(`/transactions/confirmed/${hash}`, NODE_URL), {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  }).then((res) => res.json())
-
-  console.log({ txInfo })
-  await new Promise((resolve) => setTimeout(resolve, 10000)) // 10秒待機
-} while (txInfo.code === "ResourceNotFound")
-
-console.log(`エクスプローラー`)
-console.log(`https://testnet.symbol.fyi/transactions/${hash}`)
+await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed");

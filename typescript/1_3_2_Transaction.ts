@@ -15,12 +15,12 @@ const accountB = facade.createAccount(privateKeyB)
 
 const message = "\0Hello, Symbol!" // \0はエクスプローラーやデスクトップウォレットで識別するためのフラグ
 
-const descriptor = new descriptors.TransferTransactionV1Descriptor(
-  //転送トランザクション
+//転送トランザクション
+const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
   accountB.address, //送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットのモザイクID
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットの基軸通貨のモザイクID
       new models.Amount(1000000n), //1xym
     ),
   ],
@@ -28,14 +28,17 @@ const descriptor = new descriptors.TransferTransactionV1Descriptor(
 )
 
 const tx = facade.createTransactionFromTypedDescriptor(
-  descriptor, //Txの中身
+  transferDescriptor, //Txの中身
   accountA.publicKey, //送信元アカウントの公開鍵
   100,
   60 * 60 * 2,
 )
 
 const signature = accountA.signTransaction(tx) //署名
-const jsonPayload = facade.transactionFactory.static.attachSignature(tx, signature) //ペイロード
+const jsonPayload = facade.transactionFactory.static.attachSignature(
+  tx,
+  signature,
+) //ペイロード
 
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -43,21 +46,21 @@ const response = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayload,
 }).then((res) => res.json())
 
-console.log({response})
+console.log({ response })
 
 const hash = facade.hashTransaction(tx).toString()
 
 // Txがconfirmed状態になるまで10秒ごとに状態を確認
-let txInfo;
+let txInfo
 do {
-    txInfo = await fetch(
-        new URL(`/transactions/confirmed/${hash}`, NODE_URL),
-        {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        }
-    ).then((res) => res.json());
+  txInfo = await fetch(new URL(`/transactions/confirmed/${hash}`, NODE_URL), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  }).then((res) => res.json())
 
-    console.log({ txInfo });
-    await new Promise(resolve => setTimeout(resolve, 10000)); // 10秒待機
-} while (txInfo.code === 'ResourceNotFound');
+  console.log({ txInfo })
+  await new Promise((resolve) => setTimeout(resolve, 10000)) // 10秒待機
+} while (txInfo.code === "ResourceNotFound")
+
+console.log(`エクスプローラー`)
+console.log(`https://testnet.symbol.fyi/transactions/${hash}`)

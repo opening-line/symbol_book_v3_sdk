@@ -50,6 +50,10 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx).toString()
 
+//トランザクションの状態を確認できる
+console.log(`トランザクションステータス`)
+console.log(`${NODE_URL}/transactionStatus/${hash}`)
+
 // Txがconfirmed状態になるまで10秒ごとに状態を確認
 let txInfo
 do {

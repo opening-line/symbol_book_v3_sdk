@@ -18,7 +18,7 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-const rootNameSpace = "test_" + Math.random().toString(36).substring(2, 7) // ルートネームスペースはユニークである必要があるので、ランダムな英数字文字列を追加
+const rootNameSpace = "namespace_" + Math.random().toString(36).substring(2, 7) // ルートネームスペースはユニークである必要があるので、ランダムな英数字文字列を追加
 const rootNameSpaceId = generateNamespaceId(rootNameSpace)
 const namespaceRegistrationDescriptor =
   // ネームスペース登録トランザクション
@@ -110,6 +110,10 @@ const response = await fetch(new URL("/transactions", NODE_URL), {
 console.log({ response })
 
 const hash = facade.hashTransaction(tx).toString()
+
+//トランザクションの状態を確認できる
+console.log(`トランザクションステータス`)
+console.log(`${NODE_URL}/transactionStatus/${hash}`)
 
 // Txがconfirmed状態になるまで10秒ごとに状態を確認
 let txInfo

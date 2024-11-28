@@ -38,20 +38,13 @@ const accountMetadataDescriptor =
     metadataValue,
   )
 
-const txs = [
-  //注意　Txは一つにも関わらずアグリゲートする必要がある
-  {
-    transaction: accountMetadataDescriptor,
-    signer: accountA.publicKey,
-  },
-]
-
-const innerTransactions = txs.map((tx) =>
+// メタデータ登録はアグリゲートトランザクションにする必要がある
+const innerTransactions = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
+    accountMetadataDescriptor,
+    accountA.publicKey,
   ),
-)
+]
 
 const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)

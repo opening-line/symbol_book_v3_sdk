@@ -114,19 +114,12 @@ const multisigAccountModificationDescriptor =
     [], // 除名するアドレスのリスト
   )
 
-const txsMod = [
-  {
-    transaction: multisigAccountModificationDescriptor,
-    signer: multisigAccount.publicKey, //マルチシグ化するアカウントの公開鍵を指定
-  },
-]
-
-const innerTransactionsMod = txsMod.map((tx) =>
+const innerTransactionsMod = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
+    multisigAccountModificationDescriptor,
+    multisigAccount.publicKey, //マルチシグ化するアカウントの公開鍵を指定
   ),
-)
+]
 
 const innerTransactionHashMod =
   SymbolFacade.hashEmbeddedTransactions(innerTransactionsMod)
@@ -178,13 +171,6 @@ const hashMod = facade.hashTransaction(txMod)
 
 await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed")
 
-
-
-
-
-
-
-
 //転送トランザクション(multisigAccount=>accountA)
 const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
   accountA.address, //送信先アカウントのアドレス
@@ -197,19 +183,12 @@ const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
   "\0Send 1XYM",
 )
 
-const txsTf = [
-  {
-    transaction: transferDescriptor,
-    signer: multisigAccount.publicKey, //マルチシグアカウントの公開鍵を指定
-  },
-]
-
-const innerTransactionsTf = txsTf.map((tx) =>
+const innerTransactionsTf = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
+    transferDescriptor,
+    multisigAccount.publicKey,
   ),
-)
+]
 
 const innerTransactionHashTf =
   SymbolFacade.hashEmbeddedTransactions(innerTransactionsTf)

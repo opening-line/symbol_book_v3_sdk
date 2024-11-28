@@ -80,10 +80,11 @@ const innerTransactions = txs.map((tx) =>
 const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
-const aggregateDescriptor = new descriptors.AggregateCompleteTransactionV2Descriptor(
-  innerTransactionHash,
-  innerTransactions,
-)
+const aggregateDescriptor =
+  new descriptors.AggregateCompleteTransactionV2Descriptor(
+    innerTransactionHash,
+    innerTransactions,
+  )
 
 const tx = facade.createTransactionFromTypedDescriptor(
   aggregateDescriptor,
@@ -108,4 +109,4 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx)
 
-await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed");
+await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")

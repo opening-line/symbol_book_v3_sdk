@@ -1,10 +1,5 @@
 import { PrivateKey } from "symbol-sdk"
-import {
-  Network,
-  SymbolFacade,
-  descriptors,
-  models,
-} from "symbol-sdk/symbol"
+import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
@@ -31,14 +26,14 @@ const transferDescriptor1 = new descriptors.TransferTransactionV1Descriptor(
       new models.Amount(1000000n), //1xym
     ),
   ],
-  "\0Send 1XYM"
+  "\0Send 1XYM",
 )
 
 //転送トランザクション2(accountB=>accountA)
 const transferDescriptor2 = new descriptors.TransferTransactionV1Descriptor(
   accountA.address, //送信先アカウントのアドレス
   [],
-  "\0OK"
+  "\0OK",
 )
 
 const txs = [
@@ -49,7 +44,7 @@ const txs = [
   {
     transaction: transferDescriptor2,
     signer: accountB.publicKey,
-  },  
+  },
 ]
 
 const innerTransactions = txs.map((tx) =>
@@ -62,19 +57,19 @@ const innerTransactions = txs.map((tx) =>
 const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
-const aggregateDescriptor = new descriptors.AggregateBondedTransactionV2Descriptor(
-  innerTransactionHash,
-  innerTransactions,
-)
+const aggregateDescriptor =
+  new descriptors.AggregateBondedTransactionV2Descriptor(
+    innerTransactionHash,
+    innerTransactions,
+  )
 
 const txAgg = facade.createTransactionFromTypedDescriptor(
-  aggregateDescriptor, 
+  aggregateDescriptor,
   accountA.publicKey,
-  100,             
-  60 * 60 * 2,     
-  1// 連署者数
-);
-
+  100,
+  60 * 60 * 2,
+  1, // 連署者数
+)
 
 const signatureAgg = accountA.signTransaction(txAgg) //署名
 const jsonPayloadAgg = facade.transactionFactory.static.attachSignature(
@@ -118,13 +113,13 @@ console.log({ responseLock })
 
 const hashLock = facade.hashTransaction(txLock)
 
-await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed");
+await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
 
 //ロックTxが全ノードに伝播されるまで少し時間を置く
-await new Promise((resolve) => setTimeout(resolve, 1000)); //1秒待機
+await new Promise((resolve) => setTimeout(resolve, 1000)) //1秒待機
 
 //アグリゲートボンデッドトランザクションのアナウンス 注意 アグリゲートボンデッドの場合エンドポイントが異なるので注意
-const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
+const responseAgg = await fetch(new URL("/transactions/partial", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,
@@ -133,28 +128,29 @@ const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
 console.log({ responseAgg })
 
 //部分承認状態（partial）になることを確認
-await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial");
+await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
 //署名要求トランザクションの確認と連署
-const cosignature = accountB.cosignTransaction(txAgg, true);
+const cosignature = accountB.cosignTransaction(txAgg, true)
 
 // アナウンス
 const cosignatureRequest = {
   // @ts-ignore 型情報にparentHashが含まれていため
-  "parentHash": cosignature.parentHash.toString(),
-  "signature": cosignature.signature.toString(),
-  "signerPublicKey": cosignature.signerPublicKey.toString(),
-  "version": cosignature.version.toString()
-};
+  parentHash: cosignature.parentHash.toString(),
+  signature: cosignature.signature.toString(),
+  signerPublicKey: cosignature.signerPublicKey.toString(),
+  version: cosignature.version.toString(),
+}
 
 const responseCosignature = await fetch(
-  new URL('/transactions/cosignature', NODE_URL),
+  new URL("/transactions/cosignature", NODE_URL),
   {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cosignatureRequest),
-  }).then((res) => res.json())
-  
-  console.log({ responseCosignature })
+  },
+).then((res) => res.json())
 
-  await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "confirmed");
+console.log({ responseCosignature })
+
+await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "confirmed")

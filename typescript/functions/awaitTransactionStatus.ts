@@ -3,6 +3,8 @@ export async function awaitTransactionStatus(
   nodeUrl: string,
   transactionStatus: "confirmed" | "unconfirmed" | "partial",
 ) {
+  // アナウンスがノード間で伝播されるまで1秒待機
+  await new Promise((res) => setTimeout(res, 1000))    
   // Txが指定したステータス状態になるまで待つ
   console.log(`${transactionStatus}状態まで待機中..`)
   await new Promise(async (resolve, reject) => {

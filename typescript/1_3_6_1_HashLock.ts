@@ -124,7 +124,7 @@ await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed");
 await new Promise((resolve) => setTimeout(resolve, 1000)); //1秒待機
 
 //アグリゲートボンデッドトランザクションのアナウンス 注意 アグリゲートボンデッドの場合エンドポイントが異なるので注意
-const responseAgg = await fetch(new URL("/transactions/partial", NODE_URL), {
+const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,

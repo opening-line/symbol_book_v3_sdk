@@ -1,4 +1,4 @@
-import { PrivateKey } from "symbol-sdk"
+import { PrivateKey, utils } from "symbol-sdk"
 import {
   Network,
   SymbolFacade,
@@ -24,9 +24,14 @@ const cosigAccount1 = facade.createAccount(PrivateKey.random())
 const cosigAccount2 = facade.createAccount(PrivateKey.random())
 const cosigAccount3 = facade.createAccount(PrivateKey.random())
 const cosigAccount4 = facade.createAccount(PrivateKey.random())
+console.log("Multisig Account Address:", multisigAccount.address.toString());
+console.log("Cosign Account 1 Address:", cosigAccount1.address.toString());
+console.log("Cosign Account 2 Address:", cosigAccount2.address.toString());
+console.log("Cosign Account 3 Address:", cosigAccount3.address.toString());
+console.log("Cosign Account 4 Address:", cosigAccount4.address.toString());
 
 //転送トランザクション1（手数料分のxym送付）
-const transferDescriptor1 = new descriptors.TransferTransactionV1Descriptor(
+const transferDescriptorPre1 = new descriptors.TransferTransactionV1Descriptor(
   multisigAccount.address, //送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
@@ -37,7 +42,7 @@ const transferDescriptor1 = new descriptors.TransferTransactionV1Descriptor(
 )
 
 //転送トランザクション2（手数料分のxym送付）
-const transferDescriptor2 = new descriptors.TransferTransactionV1Descriptor(
+const transferDescriptorPre2 = new descriptors.TransferTransactionV1Descriptor(
   cosigAccount1.address, //送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
@@ -47,60 +52,56 @@ const transferDescriptor2 = new descriptors.TransferTransactionV1Descriptor(
   ],
 )
 
-const txs = [
+const txsPre = [
   {
-    transaction: transferDescriptor1,
+    transaction: transferDescriptorPre1,
     signer: accountA.publicKey,
   },
   {
-    transaction: transferDescriptor2,
+    transaction: transferDescriptorPre2,
     signer: accountA.publicKey,
   }
 ]
 
-const innerTransactions = txs.map((tx) =>
+const innerTransactionsPre = txsPre.map((tx) =>
   facade.createEmbeddedTransactionFromTypedDescriptor(
     tx.transaction,
     tx.signer,
   ),
 )
 
-const innerTransactionHash =
-  SymbolFacade.hashEmbeddedTransactions(innerTransactions)
+const innerTransactionHashPre =
+  SymbolFacade.hashEmbeddedTransactions(innerTransactionsPre)
 
-const aggregateDescriptor = new descriptors.AggregateCompleteTransactionV2Descriptor(
-  innerTransactionHash,
-  innerTransactions,
+const aggregateDescriptorPre = new descriptors.AggregateCompleteTransactionV2Descriptor(
+  innerTransactionHashPre,
+  innerTransactionsPre,
 )
 
-const tx = models.AggregateCompleteTransactionV2.deserialize(
-  facade
-    .createTransactionFromTypedDescriptor(
-      aggregateDescriptor,
-      accountA.publicKey,
-      100,
-      60 * 60 * 2,
-    )
-    .serialize(),
-)
+const txPre = facade.createTransactionFromTypedDescriptor(
+  aggregateDescriptorPre,
+  accountA.publicKey,
+  100,
+  60 * 60 * 2,
+);
 
-const signature = accountA.signTransaction(tx) //署名
-const jsonPayload = facade.transactionFactory.static.attachSignature(
-  tx,
-  signature,
+const signaturePre = accountA.signTransaction(txPre) //署名
+const jsonPayloadPre = facade.transactionFactory.static.attachSignature(
+  txPre,
+  signaturePre,
 ) //ペイロード
 
-const response = await fetch(new URL("/transactions", NODE_URL), {
+const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
-  body: jsonPayload,
+  body: jsonPayloadPre,
 }).then((res) => res.json())
 
-console.log({ response })
+console.log({ responsePre })
 
-const hash = facade.hashTransaction(tx)
+const hashPre = facade.hashTransaction(txPre)
 
-await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed");
+await awaitTransactionStatus(hashPre.toString(), NODE_URL, "confirmed");
 
 // マルチシグアカウント構成トランザクション作成/署名/アナウンス
 const multisigAccountModificationDescriptor = new descriptors.MultisigAccountModificationTransactionV1Descriptor(
@@ -114,4 +115,64 @@ const multisigAccountModificationDescriptor = new descriptors.MultisigAccountMod
   ],
   []  // 除名するアドレスのリスト
 );
+
+const txsMod = [
+  {
+    transaction: multisigAccountModificationDescriptor,
+    signer: multisigAccount.publicKey, //マルチシグ化するアカウントの公開鍵を指定
+  }
+]
+
+const innerTransactionsMod = txsMod.map((tx) =>
+  facade.createEmbeddedTransactionFromTypedDescriptor(
+    tx.transaction,
+    tx.signer,
+  ),
+)
+
+const innerTransactionHashMod =
+  SymbolFacade.hashEmbeddedTransactions(innerTransactionsMod)
+
+const aggregateDescriptorMod = new descriptors.AggregateCompleteTransactionV2Descriptor(
+  innerTransactionHashMod,
+  innerTransactionsMod,
+)
+
+const txMod = models.AggregateCompleteTransactionV2.deserialize(
+  facade
+    .createTransactionFromTypedDescriptor(
+      aggregateDescriptorMod,
+      multisigAccount.publicKey,
+      100,
+      60 * 60 * 2,
+    )
+    .serialize(),
+)
+
+const signatureMod = multisigAccount.signTransaction(txMod)
+
+facade.transactionFactory.static.attachSignature(txMod, signatureMod)
+
+const cosign1 = facade.cosignTransaction(cosigAccount1.keyPair, txMod);
+txMod.cosignatures.push(cosign1);
+const cosign2 = facade.cosignTransaction(cosigAccount2.keyPair, txMod);
+txMod.cosignatures.push(cosign2);
+const cosign3 = facade.cosignTransaction(cosigAccount3.keyPair, txMod);
+txMod.cosignatures.push(cosign3);
+const cosign4 = facade.cosignTransaction(cosigAccount4.keyPair, txMod);
+txMod.cosignatures.push(cosign4);
+
+const jsonPayloadMod = utils.uint8ToHex(txMod.serialize()); //ペイロード
+
+const responseMod = await fetch(new URL("/transactions", NODE_URL), {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: jsonPayloadMod,
+}).then((res) => res.json())
+
+console.log({ responseMod })
+
+const hashMod = facade.hashTransaction(txMod)
+
+await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed");
 

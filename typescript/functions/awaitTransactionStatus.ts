@@ -12,13 +12,17 @@ export async function awaitTransactionStatus(hash: string, nodeUrl: string, tran
                 new URL("/transactionStatus/" + hash, nodeUrl),
             ).then((res) => res.json());
             if (status.group === transactionStatus) {
+                console.log("結果: ",status.code)
+                console.log(`エクスプローラー`);
+                console.log(`https://testnet.symbol.fyi/transactions/${hash}`);            
+                resolve({}); // 確認された場合は終了
+                return; 
+            } else if (status.group === "failed") {
+                console.log("結果: ",status.code)
                 resolve({});
-                return; // 確認された場合は早期リターン
+                return; // エラーを検知した場合は終了
             }
         }
-        reject(new Error("トランザクションが確認されませんでした。")); // エラーメッセージを追加
+        reject(new Error("トランザクションが確認されませんでした。"));
     });
-
-    console.log(`エクスプローラー`);
-    console.log(`https://testnet.symbol.fyi/transactions/${hash}`);
 }

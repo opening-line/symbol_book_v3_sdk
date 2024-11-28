@@ -60,15 +60,11 @@ const aggregateDescriptor = new descriptors.AggregateCompleteTransactionV2Descri
   innerTransactions,
 )
 
-const tx = models.AggregateCompleteTransactionV2.deserialize(
-  facade
-    .createTransactionFromTypedDescriptor(
-      aggregateDescriptor,
-      accountA.publicKey,
-      100,
-      60 * 60 * 2,
-    )
-    .serialize(),
+const tx = facade.createTransactionFromTypedDescriptor(
+  aggregateDescriptor,
+  accountA.publicKey,
+  100,
+  60 * 60 * 2,
 )
 
 const signature = accountA.signTransaction(tx) //署名

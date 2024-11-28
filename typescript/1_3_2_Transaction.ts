@@ -29,7 +29,7 @@ const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
 )
 
 const tx = facade.createTransactionFromTypedDescriptor(
-  transferDescriptor, //Txの中身
+  transferDescriptor,
   accountA.publicKey, //送信元アカウントの公開鍵
   100,
   60 * 60 * 2,

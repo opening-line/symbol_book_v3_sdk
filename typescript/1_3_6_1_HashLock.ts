@@ -47,7 +47,7 @@ const txs = [
     signer: accountA.publicKey,
   },
   {
-    transaction: transferDescriptor1,
+    transaction: transferDescriptor2,
     signer: accountB.publicKey,
   },  
 ]
@@ -96,8 +96,8 @@ const hashLockDescriptor = new descriptors.HashLockTransactionV1Descriptor(
 )
 
 const txLock = facade.createTransactionFromTypedDescriptor(
-  hashLockDescriptor, //Txの中身
-  accountA.publicKey, //送信元アカウントの公開鍵
+  hashLockDescriptor,
+  accountA.publicKey,
   100,
   60 * 60 * 2,
 )
@@ -123,8 +123,8 @@ await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed");
 //ロックTxが全ノードに伝播されるまで少し時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000)); //1秒待機
 
-//アグリゲートボンデッドトランザクションのアナウンス
-const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
+//アグリゲートボンデッドトランザクションのアナウンス 注意 アグリゲートボンデッドの場合エンドポイントが異なるので注意
+const responseAgg = await fetch(new URL("/transactions/partial", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,
@@ -134,3 +134,27 @@ console.log({ responseAgg })
 
 //部分承認状態（partial）になることを確認
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial");
+
+//署名要求トランザクションの確認と連署
+const cosignature = accountB.cosignTransaction(txAgg, true);
+
+// アナウンス
+const cosignatureRequest = {
+  // @ts-ignore 型情報にparentHashが含まれていため
+  "parentHash": cosignature.parentHash.toString(),
+  "signature": cosignature.signature.toString(),
+  "signerPublicKey": cosignature.signerPublicKey.toString(),
+  "version": cosignature.version.toString()
+};
+
+const responseCosignature = await fetch(
+  new URL('/transactions/cosignature', NODE_URL),
+  {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cosignatureRequest),
+  }).then((res) => res.json())
+  
+  console.log({ responseCosignature })
+
+  await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "confirmed");

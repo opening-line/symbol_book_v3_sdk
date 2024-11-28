@@ -176,4 +176,73 @@ const hashMod = facade.hashTransaction(txMod)
 
 await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed")
 
-// マルチシグアカウントからのトランザクション作成、署名、連署
+
+//転送トランザクション(multisigAccount=>accountA)
+const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
+  accountA.address, //送信先アカウントのアドレス
+  [
+    new descriptors.UnresolvedMosaicDescriptor(
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットの基軸通貨のモザイクID
+      new models.Amount(1000000n), //1xym
+    ),
+  ],
+  "\0Send 1XYM",
+)
+
+const txsTf = [
+{
+  transaction: transferDescriptor,
+  signer: multisigAccount.publicKey, //マルチシグアカウントの公開鍵を指定
+},
+]
+
+const innerTransactionsTf = txsTf.map((tx) =>
+facade.createEmbeddedTransactionFromTypedDescriptor(
+  tx.transaction,
+  tx.signer,
+),
+)
+
+const innerTransactionHashTf =
+SymbolFacade.hashEmbeddedTransactions(innerTransactionsTf)
+
+const aggregateDescriptorTf =
+new descriptors.AggregateCompleteTransactionV2Descriptor(
+  innerTransactionHashTf,
+  innerTransactionsTf,
+)
+
+const txTf = models.AggregateCompleteTransactionV2.deserialize(
+facade
+  .createTransactionFromTypedDescriptor(
+    aggregateDescriptorTf,
+    multisigAccount.publicKey,
+    100,
+    60 * 60 * 2,
+    2 // 連署者数
+  )
+  .serialize(),
+)
+
+const signatureTf = cosigAccount1.signTransaction(txTf)
+
+facade.transactionFactory.static.attachSignature(txTf, signatureTf)
+
+const cosign2Tf = facade.cosignTransaction(cosigAccount2.keyPair, txTf)
+txTf.cosignatures.push(cosign2Tf)
+const cosign3Tf = facade.cosignTransaction(cosigAccount3.keyPair, txTf)
+txTf.cosignatures.push(cosign3Tf)
+
+const jsonPayloadTf = JSON.stringify({ payload: utils.uint8ToHex(txTf.serialize())}) //ペイロード
+
+const responseTf = await fetch(new URL("/transactions", NODE_URL), {
+method: "PUT",
+headers: { "Content-Type": "application/json" },
+body: jsonPayloadTf,
+}).then((res) => res.json())
+
+console.log({ responseTf })
+
+const hashTf = facade.hashTransaction(txTf)
+
+await awaitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")

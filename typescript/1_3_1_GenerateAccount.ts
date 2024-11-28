@@ -7,9 +7,9 @@ const account = facade.createAccount(PrivateKey.random())
 console.log("秘密鍵", account.keyPair.privateKey.toString())
 console.log(
   "フォーセット",
-  `https:// testnet.symbol.tools/?recipient=${account.address.toString()}`,
+  `https://testnet.symbol.tools/?recipient=${account.address.toString()}`,
 )
 console.log(
   "エクスプローラー",
-  `https:// testnet.symbol.fyi/accounts/${account.address.toString()}`,
+  `https://testnet.symbol.fyi/accounts/${account.address.toString()}`,
 )

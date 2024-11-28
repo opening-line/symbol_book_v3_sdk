@@ -7,7 +7,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 // 事前準備
-const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
+const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)

@@ -1,5 +1,10 @@
 import { PrivateKey, utils } from "symbol-sdk"
-import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
+import {
+  Network,
+  SymbolFacade,
+  descriptors,
+  models,
+} from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
@@ -19,33 +24,50 @@ const cosigAccount1 = facade.createAccount(PrivateKey.random())
 const cosigAccount2 = facade.createAccount(PrivateKey.random())
 const cosigAccount3 = facade.createAccount(PrivateKey.random())
 const cosigAccount4 = facade.createAccount(PrivateKey.random())
-console.log("Multisig Account Address:", multisigAccount.address.toString())
-console.log("Cosign Account 1 Address:", cosigAccount1.address.toString())
-console.log("Cosign Account 2 Address:", cosigAccount2.address.toString())
-console.log("Cosign Account 3 Address:", cosigAccount3.address.toString())
-console.log("Cosign Account 4 Address:", cosigAccount4.address.toString())
+console.log(
+  "Multisig Account Address:",
+  multisigAccount.address.toString(),
+)
+console.log(
+  "Cosign Account 1 Address:",
+  cosigAccount1.address.toString(),
+)
+console.log(
+  "Cosign Account 2 Address:",
+  cosigAccount2.address.toString(),
+)
+console.log(
+  "Cosign Account 3 Address:",
+  cosigAccount3.address.toString(),
+)
+console.log(
+  "Cosign Account 4 Address:",
+  cosigAccount4.address.toString(),
+)
 
 // 転送トランザクション1（手数料分のxym送付）
-const transferDescriptorPre1 = new descriptors.TransferTransactionV1Descriptor(
-  multisigAccount.address, // 送信先アカウントのアドレス
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
-      new models.Amount(10000000n), // 10xym
-    ),
-  ],
-)
+const transferDescriptorPre1 =
+  new descriptors.TransferTransactionV1Descriptor(
+    multisigAccount.address, // 送信先アカウントのアドレス
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.Amount(10000000n), // 10xym
+      ),
+    ],
+  )
 
 // 転送トランザクション2（手数料分のxym送付）
-const transferDescriptorPre2 = new descriptors.TransferTransactionV1Descriptor(
-  cosigAccount1.address, // 送信先アカウントのアドレス
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
-      new models.Amount(10000000n), // 10xym
-    ),
-  ],
-)
+const transferDescriptorPre2 =
+  new descriptors.TransferTransactionV1Descriptor(
+    cosigAccount1.address, // 送信先アカウントのアドレス
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.Amount(10000000n), // 10xym
+      ),
+    ],
+  )
 
 const txsPre = [
   {
@@ -65,8 +87,9 @@ const innerTransactionsPre = txsPre.map((tx) =>
   ),
 )
 
-const innerTransactionHashPre =
-  SymbolFacade.hashEmbeddedTransactions(innerTransactionsPre)
+const innerTransactionHashPre = SymbolFacade.hashEmbeddedTransactions(
+  innerTransactionsPre,
+)
 
 const aggregateDescriptorPre =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
@@ -82,10 +105,11 @@ const txPre = facade.createTransactionFromTypedDescriptor(
 )
 
 const signaturePre = accountA.signTransaction(txPre) // 署名
-const jsonPayloadPre = facade.transactionFactory.static.attachSignature(
-  txPre,
-  signaturePre,
-) // ペイロード
+const jsonPayloadPre =
+  facade.transactionFactory.static.attachSignature(
+    txPre,
+    signaturePre,
+  ) // ペイロード
 
 const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -97,7 +121,11 @@ console.log({ responsePre })
 
 const hashPre = facade.hashTransaction(txPre)
 
-await awaitTransactionStatus(hashPre.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashPre.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // マルチシグアカウント構成トランザクション作成/署名/アナウンス
 const multisigAccountModificationDescriptor =
@@ -121,8 +149,9 @@ const innerTransactionsMod = [
   ),
 ]
 
-const innerTransactionHashMod =
-  SymbolFacade.hashEmbeddedTransactions(innerTransactionsMod)
+const innerTransactionHashMod = SymbolFacade.hashEmbeddedTransactions(
+  innerTransactionsMod,
+)
 
 const aggregateDescriptorMod =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
@@ -169,19 +198,24 @@ console.log({ responseMod })
 
 const hashMod = facade.hashTransaction(txMod)
 
-await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashMod.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // 転送トランザクション(multisigAccount=>accountA)
-const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountA.address, // 送信先アカウントのアドレス
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
-      new models.Amount(1000000n), // 1xym
-    ),
-  ],
-  "\0Send 1XYM",
-)
+const transferDescriptor =
+  new descriptors.TransferTransactionV1Descriptor(
+    accountA.address, // 送信先アカウントのアドレス
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.Amount(1000000n), // 1xym
+      ),
+    ],
+    "\0Send 1XYM",
+  )
 
 const innerTransactionsTf = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
@@ -190,8 +224,9 @@ const innerTransactionsTf = [
   ),
 ]
 
-const innerTransactionHashTf =
-  SymbolFacade.hashEmbeddedTransactions(innerTransactionsTf)
+const innerTransactionHashTf = SymbolFacade.hashEmbeddedTransactions(
+  innerTransactionsTf,
+)
 
 const aggregateDescriptorTf =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
@@ -215,9 +250,15 @@ const signatureTf = cosigAccount1.signTransaction(txTf)
 
 facade.transactionFactory.static.attachSignature(txTf, signatureTf)
 
-const cosign2Tf = facade.cosignTransaction(cosigAccount2.keyPair, txTf)
+const cosign2Tf = facade.cosignTransaction(
+  cosigAccount2.keyPair,
+  txTf,
+)
 txTf.cosignatures.push(cosign2Tf)
-const cosign3Tf = facade.cosignTransaction(cosigAccount3.keyPair, txTf)
+const cosign3Tf = facade.cosignTransaction(
+  cosigAccount3.keyPair,
+  txTf,
+)
 txTf.cosignatures.push(cosign3Tf)
 
 const jsonPayloadTf = JSON.stringify({

@@ -19,7 +19,9 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-const rootNameSpace = "namespace_" + Math.random().toString(36).substring(2, 7) // ルートネームスペースはユニークである必要があるので、ランダムな英数字文字列を追加
+// ルートネームスペースはユニークである必要があるので、ランダムな英数字文字列を追加
+const rootNameSpace =
+  "namespace_" + Math.random().toString(36).substring(2, 7)
 const rootNameSpaceId = generateNamespaceId(rootNameSpace)
 const namespaceRegistrationDescriptor =
   // ネームスペース登録トランザクション
@@ -32,7 +34,10 @@ const namespaceRegistrationDescriptor =
   )
 
 const accountSubNameSpace = "tarou" // サブネームスペース
-const subNameSpaceId = generateNamespaceId(accountSubNameSpace, rootNameSpaceId)
+const subNameSpaceId = generateNamespaceId(
+  accountSubNameSpace,
+  rootNameSpaceId,
+)
 
 const subNamespaceDescriptor =
   // ネームスペース登録トランザクション

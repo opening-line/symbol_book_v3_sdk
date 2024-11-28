@@ -1,5 +1,10 @@
 import { PrivateKey, utils } from "symbol-sdk"
-import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
+import {
+  Network,
+  SymbolFacade,
+  descriptors,
+  models,
+} from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
@@ -17,29 +22,32 @@ const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
 const proof = crypto.getRandomValues(new Uint8Array(20)) // ロック解除用
-const proofHex = utils.uint8ToHex(proof) // 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
+// 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
+const proofHex = utils.uint8ToHex(proof)
 
 const hashObject = sha3.sha3_256.create()
 hashObject.update(proof)
 
 const secret = hashObject.digest() // ロック用
-const secretHex = hashObject.hex() // 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
+// 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
+const secretHex = hashObject.hex()
 
 console.log(proofHex)
 console.log(secretHex)
 
 // シークレットロックトランザクション作成/署名/アナウンス
-const secretLock1Descriptor = new descriptors.SecretLockTransactionV1Descriptor(
-  accountB.address, // 解除先のアドレス
-  secret as unknown as models.Hash256, // ロック用
-  new descriptors.UnresolvedMosaicDescriptor(
-    // ロックしておくモザイクを指定
-    new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
-    new models.Amount(1000000n),
-  ),
-  new models.BlockDuration(480n), // ロックしておくブロック数（1ブロック約30秒）
-  models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
-)
+const secretLock1Descriptor =
+  new descriptors.SecretLockTransactionV1Descriptor(
+    accountB.address, // 解除先のアドレス
+    secret as unknown as models.Hash256, // ロック用
+    new descriptors.UnresolvedMosaicDescriptor(
+      // ロックしておくモザイクを指定
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+      new models.Amount(1000000n),
+    ),
+    new models.BlockDuration(480n), // ロックしておくブロック数（1ブロック約30秒）
+    models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
+  )
 
 const txLock = facade.createTransactionFromTypedDescriptor(
   secretLock1Descriptor,
@@ -49,10 +57,11 @@ const txLock = facade.createTransactionFromTypedDescriptor(
 )
 
 const signatureLock = accountA.signTransaction(txLock) // 署名
-const jsonPayloadLock = facade.transactionFactory.static.attachSignature(
-  txLock,
-  signatureLock,
-) // ペイロード
+const jsonPayloadLock =
+  facade.transactionFactory.static.attachSignature(
+    txLock,
+    signatureLock,
+  ) // ペイロード
 
 const responseLock = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -64,15 +73,20 @@ console.log({ responseLock })
 
 const hashLock = facade.hashTransaction(txLock)
 
-await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashLock.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // シークレットプルーフトランザクション作成/署名/
-const proofDescriptor = new descriptors.SecretProofTransactionV1Descriptor(
-  accountB.address, // 解除先のアドレス
-  secret as unknown as models.Hash256, // ロック用
-  models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
-  proof, // 解除用
-)
+const proofDescriptor =
+  new descriptors.SecretProofTransactionV1Descriptor(
+    accountB.address, // 解除先のアドレス
+    secret as unknown as models.Hash256, // ロック用
+    models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
+    proof, // 解除用
+  )
 
 const txProof = facade.createTransactionFromTypedDescriptor(
   proofDescriptor,
@@ -82,19 +96,27 @@ const txProof = facade.createTransactionFromTypedDescriptor(
 )
 
 const signatureProof = accountB.signTransaction(txProof) // 署名
-const jsonPayloadProof = facade.transactionFactory.static.attachSignature(
-  txProof,
-  signatureProof,
-) // ペイロード
+const jsonPayloadProof =
+  facade.transactionFactory.static.attachSignature(
+    txProof,
+    signatureProof,
+  ) // ペイロード
 
-const responseProof = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadProof,
-}).then((res) => res.json())
+const responseProof = await fetch(
+  new URL("/transactions", NODE_URL),
+  {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: jsonPayloadProof,
+  },
+).then((res) => res.json())
 
 console.log({ responseProof })
 
 const hashProof = facade.hashTransaction(txProof)
 
-await awaitTransactionStatus(hashProof.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashProof.toString(),
+  NODE_URL,
+  "confirmed",
+)

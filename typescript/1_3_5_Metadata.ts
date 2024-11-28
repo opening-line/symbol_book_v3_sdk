@@ -20,7 +20,8 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-const keyText = "key_" + Math.random().toString(36).substring(2, 7) // メタデータのキー
+// メタデータのキー
+const keyText = "key_" + Math.random().toString(36).substring(2, 7)
 const valueText = "test" // 　メタデータの値
 const metadataKey = metadataGenerateKey(keyText) // bigIntに変換
 const textEncoder = new TextEncoder()

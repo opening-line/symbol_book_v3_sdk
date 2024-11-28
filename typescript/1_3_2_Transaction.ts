@@ -1,5 +1,10 @@
 import { PrivateKey } from "symbol-sdk"
-import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
+import {
+  Network,
+  SymbolFacade,
+  descriptors,
+  models,
+} from "symbol-sdk/symbol"
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
@@ -14,19 +19,22 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-const message = "\0Hello, Symbol!" // \0はエクスプローラーやデスクトップウォレットで識別するためのフラグ
+// \0はエクスプローラーやデスクトップウォレットで識別するためのフラグ
+const message = "\0Hello, Symbol!"
 
 // 転送トランザクション
-const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountB.address, // 送信先アカウントのアドレス
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
-      new models.Amount(1000000n), // 1xym
-    ),
-  ],
-  message, // メッセージ
-)
+const transferDescriptor =
+  new descriptors.TransferTransactionV1Descriptor(
+    accountB.address, // 送信先アカウントのアドレス
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        // テストネットの基軸通貨のモザイクID
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.Amount(1000000n), // 1xym
+      ),
+    ],
+    message, // メッセージ
+  )
 
 const tx = facade.createTransactionFromTypedDescriptor(
   transferDescriptor,

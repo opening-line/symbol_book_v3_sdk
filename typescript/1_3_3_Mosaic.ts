@@ -52,15 +52,16 @@ const mosaicSupplyChangeDescriptor =
   )
 
 // 転送トランザクション
-const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountB.address, // 送信先アカウントのアドレス
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(id), // 作成したモザイクID
-      new models.Amount(1n), // 1mosaic
-    ),
-  ],
-)
+const transferDescriptor =
+  new descriptors.TransferTransactionV1Descriptor(
+    accountB.address, // 送信先アカウントのアドレス
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        new models.UnresolvedMosaicId(id), // 作成したモザイクID
+        new models.Amount(1n), // 1mosaic
+      ),
+    ],
+  )
 
 const txs = [
   {

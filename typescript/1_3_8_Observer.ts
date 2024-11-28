@@ -1,5 +1,10 @@
 import { PrivateKey } from "symbol-sdk"
-import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
+import {
+  Network,
+  SymbolFacade,
+  descriptors,
+  models,
+} from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
 
@@ -17,78 +22,102 @@ const accountB = facade.createAccount(privateKeyB)
 // WebSocketクライアントの作成
 const wsEndpoint = NODE_URL.replace("http", "ws") + "/ws"
 let uid = ""
-const funcs: { [key: string]: Function[] } = {}
+const subscriptions = new Map<string, Function[]>()
 
-// チャンネルへのコールバック追加
-const addCallback = (channel: string, callback: Function): void => {
-  funcs[channel] = funcs[channel] || []
-  funcs[channel].push(callback)
+// サブスクリプション管理
+const subscribe = (channel: string, callback: Function): void => {
+  if (!subscriptions.has(channel)) {
+    subscriptions.set(channel, [])
+  }
+  subscriptions.get(channel)?.push(callback)
 }
 
-// WebSocket接続とエラーハンドリング
-const connectWebSocket = () => {
-  const listener = new WebSocket(wsEndpoint)
+// WebSocket接続の管理
+const initializeWebSocket = () => {
+  const ws = new WebSocket(wsEndpoint)
 
-  listener.onopen = () => {
-    console.log("WebSocket Connected")
-    if (uid) {
-      ;[confirmedChannelName, unconfirmedChannelName].forEach((channel) => {
-        listener.send(JSON.stringify({ uid, subscribe: channel }))
-      })
-    }
-  }
+  ws.addEventListener('open', () => {
+    console.log('WebSocket接続確立')
+  })
 
-  listener.onmessage = (e: MessageEvent) => {
+  ws.addEventListener('message', (event: MessageEvent) => {
     try {
-      const data = JSON.parse(e.data)
-      if (data.uid) {
-        uid = data.uid
-        console.log("Received UID:", uid)
-        ;[confirmedChannelName, unconfirmedChannelName].forEach((channel) => {
-          listener.send(JSON.stringify({ uid, subscribe: channel }))
-        })
+      const message = JSON.parse(event.data)
+      
+      // UIDの初期処理
+      if (message.uid) {
+        uid = message.uid
+        console.log('接続ID:', uid)
+        
+        // チャンネル購読
+        const channels = [confirmedChannelName, unconfirmedChannelName];
+        channels.forEach(channel => {
+          ws.send(JSON.stringify({
+            uid,
+            subscribe: channel
+          }));
+        });
         return
       }
-      funcs[data.topic]?.forEach((f) => f(data.data))
-    } catch (error) {
-      console.error("Error processing message:", error)
+
+      // 購読チャンネルからのメッセージ処理
+      const handlers = subscriptions.get(message.topic)
+      handlers?.forEach(handler => {
+        handler(message.data)
+        // confirmedAddedを検知したらWebSocketを切る処理
+        if (message.topic === confirmedChannelName) {
+          ws.close()
+        }
+      })
+    } catch (err) {
+      console.error('メッセージ処理エラー:', err)
     }
-  }
+  })
 
-  listener.onerror = (error: Event) => console.error("WebSocket Error:", error)
-  listener.onclose = (closeEvent: CloseEvent) => {
-    console.log("WebSocket Closed:", closeEvent)
-    uid = ""
-    Object.keys(funcs).forEach((key) => delete funcs[key])
-  }
+  ws.addEventListener('error', (event) => {
+    console.error('WebSocketエラー:', event)
+  })
 
-  return listener
+  ws.addEventListener('close', () => {
+    console.log('WebSocket接続終了')
+    uid = ''
+    subscriptions.clear()
+  })
+
+  return ws
 }
 
-// コールバックの設定
+// チャンネル設定
 const confirmedChannelName = `confirmedAdded/${accountA.address}`
 const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
-addCallback(confirmedChannelName, (tx) => console.log("confirmed added", tx))
-addCallback(unconfirmedChannelName, (tx) =>
-  console.log("unconfirmed added", tx),
+
+subscribe(confirmedChannelName, (tx : any) => 
+  console.log('承認済みトランザクション:', tx)
+)
+subscribe(unconfirmedChannelName, (tx : any) => 
+  console.log('未承認トランザクション:', tx)
 )
 
-// WebSocket接続を開始
-connectWebSocket()
+// WebSocket開始
+initializeWebSocket()
 
-const message = "\0Hello, Symbol!" // \0はエクスプローラーやデスクトップウォレットで識別するためのフラグ
+// 接続が確立するまで90秒待つ
+await new Promise((resolve) => setTimeout(resolve, 90000))
+
+const message = "\0Hello, Symbol!"
 
 // 転送トランザクション
-const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountB.address,
-  [
-    new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-      new models.Amount(1000000n),
-    ),
-  ],
-  message,
-)
+const transferDescriptor =
+  new descriptors.TransferTransactionV1Descriptor(
+    accountB.address,
+    [
+      new descriptors.UnresolvedMosaicDescriptor(
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.Amount(1000000n),
+      ),
+    ],
+    message,
+  )
 
 const tx = facade.createTransactionFromTypedDescriptor(
   transferDescriptor,

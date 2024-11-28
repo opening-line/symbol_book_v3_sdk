@@ -11,23 +11,23 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-//dotenvの設定
+// dotenvの設定
 dotenv.config()
 
-//事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+// 事前準備
+const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-const keyText = "key_" + Math.random().toString(36).substring(2, 7) //メタデータのキー
-const valueText = "test" //　メタデータの値
-const metadataKey = metadataGenerateKey(keyText) //bigIntに変換
+const keyText = "key_" + Math.random().toString(36).substring(2, 7) // メタデータのキー
+const valueText = "test" // 　メタデータの値
+const metadataKey = metadataGenerateKey(keyText) // bigIntに変換
 const textEncoder = new TextEncoder()
 const metadataValue = metadataUpdateValue(
   textEncoder.encode(""),
   textEncoder.encode(valueText),
-) //Uint8Arrayに変換
+) // Uint8Arrayに変換
 
 const accountMetadataDescriptor =
   // アカウントメタデータ登録トランザクション
@@ -62,11 +62,11 @@ const tx = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signature = accountA.signTransaction(tx) //署名
+const signature = accountA.signTransaction(tx) // 署名
 const jsonPayload = facade.transactionFactory.static.attachSignature(
   tx,
   signature,
-) //ペイロード
+) // ペイロード
 
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",

@@ -3,11 +3,11 @@ import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
 
-//dotenvの設定
+// dotenvの設定
 dotenv.config()
 
-//事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+// 事前準備
+const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)

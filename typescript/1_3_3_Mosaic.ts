@@ -10,11 +10,11 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-//dotenvの設定
+// dotenvの設定
 dotenv.config()
 
-//事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+// 事前準備
+const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -51,13 +51,13 @@ const mosaicSupplyChangeDescriptor =
     models.MosaicSupplyChangeAction.INCREASE, // 供給量変更アクション（0: Decrease, 1: Increase）
   )
 
-//転送トランザクション
+// 転送トランザクション
 const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountB.address, //送信先アカウントのアドレス
+  accountB.address, // 送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(id), //作成したモザイクID
-      new models.Amount(1n), //1mosaic
+      new models.UnresolvedMosaicId(id), // 作成したモザイクID
+      new models.Amount(1n), // 1mosaic
     ),
   ],
 )
@@ -100,11 +100,11 @@ const tx = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signature = accountA.signTransaction(tx) //署名
+const signature = accountA.signTransaction(tx) // 署名
 const jsonPayload = facade.transactionFactory.static.attachSignature(
   tx,
   signature,
-) //ペイロード
+) // ペイロード
 
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",

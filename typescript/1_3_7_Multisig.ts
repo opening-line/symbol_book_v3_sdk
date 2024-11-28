@@ -4,16 +4,16 @@ import { Network, SymbolFacade, descriptors, models } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-//dotenvの設定
+// dotenvの設定
 dotenv.config()
 
-//事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+// 事前準備
+const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-//事前アカウント作成
+// 事前アカウント作成
 const multisigAccount = facade.createAccount(PrivateKey.random())
 const cosigAccount1 = facade.createAccount(PrivateKey.random())
 const cosigAccount2 = facade.createAccount(PrivateKey.random())
@@ -25,24 +25,24 @@ console.log("Cosign Account 2 Address:", cosigAccount2.address.toString())
 console.log("Cosign Account 3 Address:", cosigAccount3.address.toString())
 console.log("Cosign Account 4 Address:", cosigAccount4.address.toString())
 
-//転送トランザクション1（手数料分のxym送付）
+// 転送トランザクション1（手数料分のxym送付）
 const transferDescriptorPre1 = new descriptors.TransferTransactionV1Descriptor(
-  multisigAccount.address, //送信先アカウントのアドレス
+  multisigAccount.address, // 送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットの基軸通貨のモザイクID
-      new models.Amount(10000000n), //10xym
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
+      new models.Amount(10000000n), // 10xym
     ),
   ],
 )
 
-//転送トランザクション2（手数料分のxym送付）
+// 転送トランザクション2（手数料分のxym送付）
 const transferDescriptorPre2 = new descriptors.TransferTransactionV1Descriptor(
-  cosigAccount1.address, //送信先アカウントのアドレス
+  cosigAccount1.address, // 送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットの基軸通貨のモザイクID
-      new models.Amount(10000000n), //10xym
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
+      new models.Amount(10000000n), // 10xym
     ),
   ],
 )
@@ -81,11 +81,11 @@ const txPre = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signaturePre = accountA.signTransaction(txPre) //署名
+const signaturePre = accountA.signTransaction(txPre) // 署名
 const jsonPayloadPre = facade.transactionFactory.static.attachSignature(
   txPre,
   signaturePre,
-) //ペイロード
+) // ペイロード
 
 const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -117,7 +117,7 @@ const multisigAccountModificationDescriptor =
 const innerTransactionsMod = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
     multisigAccountModificationDescriptor,
-    multisigAccount.publicKey, //マルチシグ化するアカウントの公開鍵を指定
+    multisigAccount.publicKey, // マルチシグ化するアカウントの公開鍵を指定
   ),
 ]
 
@@ -157,7 +157,7 @@ txMod.cosignatures.push(cosign4)
 
 const jsonPayloadMod = JSON.stringify({
   payload: utils.uint8ToHex(txMod.serialize()),
-}) //ペイロード
+}) // ペイロード
 
 const responseMod = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -171,13 +171,13 @@ const hashMod = facade.hashTransaction(txMod)
 
 await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed")
 
-//転送トランザクション(multisigAccount=>accountA)
+// 転送トランザクション(multisigAccount=>accountA)
 const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
-  accountA.address, //送信先アカウントのアドレス
+  accountA.address, // 送信先アカウントのアドレス
   [
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), //テストネットの基軸通貨のモザイクID
-      new models.Amount(1000000n), //1xym
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // テストネットの基軸通貨のモザイクID
+      new models.Amount(1000000n), // 1xym
     ),
   ],
   "\0Send 1XYM",
@@ -203,7 +203,7 @@ const txTf = models.AggregateCompleteTransactionV2.deserialize(
   facade
     .createTransactionFromTypedDescriptor(
       aggregateDescriptorTf,
-      cosigAccount1.publicKey, //起案者のcosigAccount1を指定
+      cosigAccount1.publicKey, // 起案者のcosigAccount1を指定
       100,
       60 * 60 * 2,
       2, // 連署者数
@@ -222,7 +222,7 @@ txTf.cosignatures.push(cosign3Tf)
 
 const jsonPayloadTf = JSON.stringify({
   payload: utils.uint8ToHex(txTf.serialize()),
-}) //ペイロード
+}) // ペイロード
 
 const responseTf = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",

@@ -14,7 +14,7 @@ export async function awaitTransactionStatus(
       if (status.group === transactionStatus) {
         console.log("結果 ", status.code)
         console.log(`エクスプローラー`)
-        console.log(`https://testnet.symbol.fyi/transactions/${hash}`)
+        console.log(`https:// testnet.symbol.fyi/transactions/${hash}`)
         resolve({}) // 確認された場合は終了
         return
       } else if (

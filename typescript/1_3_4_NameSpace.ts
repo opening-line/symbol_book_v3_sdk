@@ -10,11 +10,11 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-//dotenvの設定
+// dotenvの設定
 dotenv.config()
 
-//事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+// 事前準備
+const NODE_URL = "https:// sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -31,7 +31,7 @@ const namespaceRegistrationDescriptor =
     rootNameSpace, // レンタルするネームスペース
   )
 
-const accountSubNameSpace = "tarou" //サブネームスペース
+const accountSubNameSpace = "tarou" // サブネームスペース
 const subNameSpaceId = generateNamespaceId(accountSubNameSpace, rootNameSpaceId)
 
 const subNamespaceDescriptor =
@@ -93,11 +93,11 @@ const tx = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signature = accountA.signTransaction(tx) //署名
+const signature = accountA.signTransaction(tx) // 署名
 const jsonPayload = facade.transactionFactory.static.attachSignature(
   tx,
   signature,
-) //ペイロード
+) // ペイロード
 
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",

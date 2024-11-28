@@ -73,6 +73,7 @@ console.log({ responseLock })
 
 const hashLock = facade.hashTransaction(txLock)
 
+console.log("===シークレットロックトランザクション===")
 await awaitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
@@ -115,6 +116,7 @@ console.log({ responseProof })
 
 const hashProof = facade.hashTransaction(txProof)
 
+console.log("===シークレットプルーフトランザクション===")
 await awaitTransactionStatus(
   hashProof.toString(),
   NODE_URL,

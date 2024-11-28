@@ -117,4 +117,5 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx)
 
+console.log("===モザイク発行及び転送トランザクション===")
 await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")

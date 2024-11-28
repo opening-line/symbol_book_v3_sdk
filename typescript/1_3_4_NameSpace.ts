@@ -114,4 +114,5 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx)
 
+console.log("===ネームスペースレンタル及びリンクトランザクション===")
 await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")

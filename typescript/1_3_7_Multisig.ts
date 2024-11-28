@@ -46,7 +46,7 @@ console.log(
 )
 
 // 転送トランザクション1（手数料分のxym送付）
-const transferDescriptorPre1 =
+const transferDescriptor1 =
   new descriptors.TransferTransactionV1Descriptor(
     multisigAccount.address, // 送信先アカウントのアドレス
     [
@@ -58,7 +58,7 @@ const transferDescriptorPre1 =
   )
 
 // 転送トランザクション2（手数料分のxym送付）
-const transferDescriptorPre2 =
+const transferDescriptor2 =
   new descriptors.TransferTransactionV1Descriptor(
     cosigAccount1.address, // 送信先アカウントのアドレス
     [
@@ -71,11 +71,11 @@ const transferDescriptorPre2 =
 
 const txsPre = [
   {
-    transaction: transferDescriptorPre1,
+    transaction: transferDescriptor1,
     signer: accountA.publicKey,
   },
   {
-    transaction: transferDescriptorPre2,
+    transaction: transferDescriptor2,
     signer: accountA.publicKey,
   },
 ]
@@ -121,6 +121,7 @@ console.log({ responsePre })
 
 const hashPre = facade.hashTransaction(txPre)
 
+console.log("===事前手数料転送トランザクション===")
 await awaitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
@@ -198,6 +199,7 @@ console.log({ responseMod })
 
 const hashMod = facade.hashTransaction(txMod)
 
+console.log("===マルチシグアカウント構成トランザクション===")
 await awaitTransactionStatus(
   hashMod.toString(),
   NODE_URL,
@@ -275,4 +277,5 @@ console.log({ responseTf })
 
 const hashTf = facade.hashTransaction(txTf)
 
+console.log("===転送トランザクション（マルチシグアカウントから）===")
 await awaitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")

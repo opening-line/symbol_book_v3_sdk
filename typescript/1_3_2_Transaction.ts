@@ -59,4 +59,5 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx)
 
+console.log("===転送トランザクション===")
 await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")

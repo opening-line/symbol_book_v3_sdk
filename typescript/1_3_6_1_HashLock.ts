@@ -28,7 +28,7 @@ const transferDescriptor1 =
     accountB.address, // 送信先アカウントのアドレス
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen), 
+        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -123,6 +123,7 @@ console.log({ responseLock })
 
 const hashLock = facade.hashTransaction(txLock)
 
+console.log("===ハッシュロックトランザクション===")
 await awaitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
@@ -145,6 +146,7 @@ const responseAgg = await fetch(
 console.log({ responseAgg })
 
 // 部分承認状態（partial）になることを確認
+console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
 // 署名要求トランザクションの確認と連署
@@ -159,7 +161,7 @@ const cosignatureRequest = {
   version: cosignature.version.toString(),
 }
 
-const responseCosignature = await fetch(
+const responseCos = await fetch(
   new URL("/transactions/cosignature", NODE_URL),
   {
     method: "PUT",
@@ -168,8 +170,9 @@ const responseCosignature = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseCosignature })
+console.log({ responseCos })
 
+console.log("===アグリゲートボンデッドトランザクションへの連署===")
 await awaitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,

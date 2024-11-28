@@ -79,4 +79,5 @@ console.log({ response })
 
 const hash = facade.hashTransaction(tx)
 
+console.log("===アカウントメタデータトランザクション===")
 await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")

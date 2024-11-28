@@ -144,7 +144,7 @@ const txMod = models.AggregateCompleteTransactionV2.deserialize(
       multisigAccount.publicKey,
       100,
       60 * 60 * 2,
-      4 // 連署者数
+      4, // 連署者数
     )
     .serialize(),
 )
@@ -162,7 +162,9 @@ txMod.cosignatures.push(cosign3)
 const cosign4 = facade.cosignTransaction(cosigAccount4.keyPair, txMod)
 txMod.cosignatures.push(cosign4)
 
-const jsonPayloadMod = JSON.stringify({ payload: utils.uint8ToHex(txMod.serialize())}) //ペイロード
+const jsonPayloadMod = JSON.stringify({
+  payload: utils.uint8ToHex(txMod.serialize()),
+}) //ペイロード
 
 const responseMod = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -175,6 +177,12 @@ console.log({ responseMod })
 const hashMod = facade.hashTransaction(txMod)
 
 await awaitTransactionStatus(hashMod.toString(), NODE_URL, "confirmed")
+
+
+
+
+
+
 
 
 //転送トランザクション(multisigAccount=>accountA)
@@ -190,38 +198,38 @@ const transferDescriptor = new descriptors.TransferTransactionV1Descriptor(
 )
 
 const txsTf = [
-{
-  transaction: transferDescriptor,
-  signer: multisigAccount.publicKey, //マルチシグアカウントの公開鍵を指定
-},
+  {
+    transaction: transferDescriptor,
+    signer: multisigAccount.publicKey, //マルチシグアカウントの公開鍵を指定
+  },
 ]
 
 const innerTransactionsTf = txsTf.map((tx) =>
-facade.createEmbeddedTransactionFromTypedDescriptor(
-  tx.transaction,
-  tx.signer,
-),
+  facade.createEmbeddedTransactionFromTypedDescriptor(
+    tx.transaction,
+    tx.signer,
+  ),
 )
 
 const innerTransactionHashTf =
-SymbolFacade.hashEmbeddedTransactions(innerTransactionsTf)
+  SymbolFacade.hashEmbeddedTransactions(innerTransactionsTf)
 
 const aggregateDescriptorTf =
-new descriptors.AggregateCompleteTransactionV2Descriptor(
-  innerTransactionHashTf,
-  innerTransactionsTf,
-)
+  new descriptors.AggregateCompleteTransactionV2Descriptor(
+    innerTransactionHashTf,
+    innerTransactionsTf,
+  )
 
 const txTf = models.AggregateCompleteTransactionV2.deserialize(
-facade
-  .createTransactionFromTypedDescriptor(
-    aggregateDescriptorTf,
-    multisigAccount.publicKey,
-    100,
-    60 * 60 * 2,
-    2 // 連署者数
-  )
-  .serialize(),
+  facade
+    .createTransactionFromTypedDescriptor(
+      aggregateDescriptorTf,
+      cosigAccount1.publicKey, //起案者のcosigAccount1を指定
+      100,
+      60 * 60 * 2,
+      2, // 連署者数
+    )
+    .serialize(),
 )
 
 const signatureTf = cosigAccount1.signTransaction(txTf)
@@ -233,12 +241,14 @@ txTf.cosignatures.push(cosign2Tf)
 const cosign3Tf = facade.cosignTransaction(cosigAccount3.keyPair, txTf)
 txTf.cosignatures.push(cosign3Tf)
 
-const jsonPayloadTf = JSON.stringify({ payload: utils.uint8ToHex(txTf.serialize())}) //ペイロード
+const jsonPayloadTf = JSON.stringify({
+  payload: utils.uint8ToHex(txTf.serialize()),
+}) //ペイロード
 
 const responseTf = await fetch(new URL("/transactions", NODE_URL), {
-method: "PUT",
-headers: { "Content-Type": "application/json" },
-body: jsonPayloadTf,
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: jsonPayloadTf,
 }).then((res) => res.json())
 
 console.log({ responseTf })

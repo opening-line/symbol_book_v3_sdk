@@ -18,7 +18,7 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-// 事前アカウント作成
+// 事前アカウント生成
 const multisigAccount = facade.createAccount(PrivateKey.random())
 const cosigAccount1 = facade.createAccount(PrivateKey.random())
 const cosigAccount2 = facade.createAccount(PrivateKey.random())
@@ -128,7 +128,7 @@ await awaitTransactionStatus(
   "confirmed",
 )
 
-// マルチシグアカウント構成トランザクション作成/署名/アナウンス
+// マルチシグアカウント構成トランザクション生成/署名/アナウンス
 const multisigAccountModificationDescriptor =
   new descriptors.MultisigAccountModificationTransactionV1Descriptor(
     3, // マルチシグ構成除名に必要な署名数の増減値

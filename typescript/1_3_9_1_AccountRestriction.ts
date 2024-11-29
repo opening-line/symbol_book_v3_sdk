@@ -8,7 +8,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
-import { sendTransaction } from "./functions/sendTransaction"
+import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -19,7 +19,7 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-// 事前アカウント作成
+// 事前アカウント生成
 const restrictedAccount1 = facade.createAccount(PrivateKey.random())
 const restrictedAccount2 = facade.createAccount(PrivateKey.random())
 const restrictedAccount3 = facade.createAccount(PrivateKey.random())
@@ -193,7 +193,7 @@ const transferDescriptor1 =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor1,
   accountA,
   "アカウント受信禁止確認用トランザクション",
@@ -260,7 +260,7 @@ const transferDescriptor2 =
     ],
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor2,
   accountA,
   "モザイク受信禁止確認用トランザクション",
@@ -324,7 +324,7 @@ const transferDescriptor3 =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor3,
   restrictedAccount3,
   "トランザクション送信禁止確認用トランザクション",

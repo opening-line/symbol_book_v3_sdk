@@ -8,7 +8,7 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import { sendTransaction } from "./functions/sendTransaction"
+import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -35,7 +35,7 @@ const secretHex = hashObject.hex()
 console.log(proofHex)
 console.log(secretHex)
 
-// シークレットロックトランザクション作成/署名/アナウンス
+// シークレットロックトランザクション生成/署名/アナウンス
 const secretLock1Descriptor =
   new descriptors.SecretLockTransactionV1Descriptor(
     accountB.address, // 解除先のアドレス
@@ -49,13 +49,13 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   secretLock1Descriptor,
   accountA,
   "シークレットロックトランザクション",
 )
 
-// シークレットプルーフトランザクション作成/署名/
+// シークレットプルーフトランザクション生成/署名/
 const proofDescriptor =
   new descriptors.SecretProofTransactionV1Descriptor(
     accountB.address, // 解除先のアドレス
@@ -64,7 +64,7 @@ const proofDescriptor =
     proof, // 解除用
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   proofDescriptor,
   accountB,
   "シークレットプルーフトランザクション",

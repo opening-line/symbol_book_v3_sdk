@@ -1,3 +1,4 @@
+// ネームスペースを登録しアカウントに紐づけるコード
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -10,54 +11,53 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-// ルートネームスペースはユニークである必要があるので、ランダムな英数字文字列を追加
+// ルートネームスペース名の指定
+// ブロックチェーン内でユニークである必要があるので、ランダムな英数字文字列を追加する
 const rootNameSpace =
   "namespace_" + Math.random().toString(36).substring(2, 7)
+// ネームスペースIDの生成
 const rootNameSpaceId = generateNamespaceId(rootNameSpace)
+
 const namespaceRegistrationDescriptor =
   // ネームスペース登録トランザクション
   new descriptors.NamespaceRegistrationTransactionV1Descriptor(
     new models.NamespaceId(rootNameSpaceId), // ネームスペースID
-    models.NamespaceRegistrationType.ROOT, // タイプとしてルートネームスペースを指定
-    new models.BlockDuration(86400n), // レンタル期間
-    undefined, // 親に当たるネームスペースIDを指定（ルートの場合はundefined）
-    rootNameSpace, // レンタルするネームスペース
+    models.NamespaceRegistrationType.ROOT, // ルートネームスペースとして登録
+    new models.BlockDuration(86400n), // レンタル期間 （ブロック数）
+    undefined, // ルートネームスペースの場合はundefined
+    rootNameSpace, // レンタルするネームスペース名
   )
 
-const accountSubNameSpace = "tarou" // サブネームスペース
+// サブネームスペース名の指定
+const subNameSpace = "tarou"
 const subNameSpaceId = generateNamespaceId(
-  accountSubNameSpace,
-  rootNameSpaceId,
+  subNameSpace,
+  rootNameSpaceId, // 第二引数に親に当たるネームスペースIDを指定
 )
 
 const subNamespaceRegistrationDescriptor =
   // ネームスペース登録トランザクション
   new descriptors.NamespaceRegistrationTransactionV1Descriptor(
-    new models.NamespaceId(subNameSpaceId), // ネームスペースID
-    models.NamespaceRegistrationType.CHILD, // タイプとしてサブネームスペースを指定
-    undefined, // レンタル期間 (サブネームスペースの場合は省略)
+    new models.NamespaceId(subNameSpaceId),
+    models.NamespaceRegistrationType.CHILD, // サブネームスペースとして登録
+    undefined, // サブネームスペースの場合は省略可能
     new models.NamespaceId(rootNameSpaceId), // 親に当たるネームスペースIDを指定
-    accountSubNameSpace, // ネームスペース
+    subNameSpace,
   )
 
-// リンクするネームスペースとアドレスの設定
-const namespaceId = new models.NamespaceId(subNameSpaceId)
-// ネームアドレスをアドレスにリンクするトランザクション
 const addressAliasDescriptor =
+  // ネームスペースをアドレスにリンクするトランザクション
   new descriptors.AddressAliasTransactionV1Descriptor(
-    // Txタイプ:アドレスエイリアスTx
-    namespaceId, // ネームスペースID
-    accountA.address, // リンクを行うアドレス
-    models.AliasAction.LINK,
+    new models.NamespaceId(subNameSpaceId), // リンクするネームスペースID
+    accountA.address, // リンクするアカウントのアドレス
+    models.AliasAction.LINK, // リンクする（LINK）、リンクを外す（UNLINK）
   )
 
 const txs = [
@@ -98,12 +98,12 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const signatureAgg = accountA.signTransaction(txAgg)
 const jsonPayloadAgg =
   facade.transactionFactory.static.attachSignature(
     txAgg,
     signatureAgg,
-  ) // ペイロード
+  )
 
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -115,7 +115,7 @@ console.log({ responseAgg })
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-console.log("===ネームスペースレンタル及びリンクトランザクション===")
+console.log("===ネームスペース登録及びリンクトランザクション===")
 await awaitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,

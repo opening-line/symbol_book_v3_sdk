@@ -8,7 +8,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
-import { sendTransaction } from "./functions/sendTransaction"
+import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -21,7 +21,7 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// アグリゲートボンデッドトランザクションの作成と署名
+// アグリゲートボンデッドトランザクションの生成と署名
 
 // 転送トランザクション1(accountA=>accountB)
 const transferDescriptor1 =
@@ -88,7 +88,7 @@ const jsonPayloadAgg =
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-// ハッシュロックトランザクションの作成、署名、アナウンス
+// ハッシュロックトランザクションの生成、署名、アナウンス
 
 const hashLockDescriptor =
   new descriptors.HashLockTransactionV1Descriptor(
@@ -100,7 +100,7 @@ const hashLockDescriptor =
     hashAgg,
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   hashLockDescriptor,
   accountA,
   "ハッシュロックトランザクション",

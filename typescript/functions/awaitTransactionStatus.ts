@@ -1,31 +1,28 @@
+//トランザクションハッシュを指定してトランザクションの状態を確認する関数
 export async function awaitTransactionStatus(
   hash: string,
   nodeUrl: string,
   transactionStatus: "confirmed" | "unconfirmed" | "partial",
 ) {
-  // アナウンスがノード間で伝播されるまで1秒待機
-  await new Promise((res) => setTimeout(res, 1000))
-  // Txが指定したステータス状態になるまで待つ
   console.log(`${transactionStatus}状態まで待機中..`)
   await new Promise(async (resolve, reject) => {
     for (let i = 0; i < 100; i++) {
       await new Promise((res) => setTimeout(res, 1000))
+      //トランザクションハッシュからステータスを確認
       const status = await fetch(
         new URL("/transactionStatus/" + hash, nodeUrl),
       ).then((res) => res.json())
+      //指定したトランザクションステータスになっていたら結果を表示させる
       if (status.group === transactionStatus) {
         console.log("結果 ", status.code)
         console.log(`エクスプローラー`)
         console.log(`https://testnet.symbol.fyi/transactions/${hash}`)
-        resolve({}) // 確認された場合は終了
+        resolve({})
         return
-      } else if (
-        status.group === "failed" ||
-        status.code == "ResourceNotFound"
-      ) {
+      } else if (status.group === "failed") {
         console.log("結果　エラー ", status.code)
         resolve({})
-        return // エラーを検知した場合は終了
+        return
       }
     }
     reject(new Error("トランザクションが確認されませんでした。"))

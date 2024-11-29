@@ -7,7 +7,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { sendTransaction } from "./functions/sendTransaction"
+import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -20,7 +20,7 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// WebSocketクライアントの作成
+// WebSocketクライアントの生成
 const wsEndpoint = NODE_URL.replace("http", "ws") + "/ws"
 let uid = ""
 const subscriptions = new Map<string, Function[]>()
@@ -123,7 +123,7 @@ const transferDescriptor =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor,
   accountA,
   "監視確認用トランザクション",

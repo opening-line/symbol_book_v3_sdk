@@ -20,7 +20,7 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// トランザクションの作成、accountAでの署名
+// トランザクションの生成、accountAでの署名
 // 転送トランザクション1（accountA => accountB）
 const transferDescriptor1 =
   new descriptors.TransferTransactionV1Descriptor(

@@ -1,3 +1,4 @@
+// モザイクを生成し送付するコード
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -10,10 +11,8 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -21,39 +20,37 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-//第三者に転送可能にするか
-const mosaicFlagsValue = models.MosaicFlags.TRANSFERABLE.value
-
+//モザイク定義用のフラグ値
+const mosaicFlagsValue = models.MosaicFlags.TRANSFERABLE.value //第三者に転送可能にする
+//モザイクID生成時のノンスの生成
 const nonce = Math.floor(Math.random() * 0xffffffff)
+//モザイクIDの生成
 const id = generateMosaicId(accountA.address, nonce)
 
-// モザイク定義トランザクションの作成
 const mosaicDefinitionDescriptor =
+  // モザイク定義トランザクション
   new descriptors.MosaicDefinitionTransactionV1Descriptor(
     new models.MosaicId(id), // モザイクID
     new models.BlockDuration(0n), // 有効期限
-    new models.MosaicNonce(nonce), // モザイクナンス
-    new models.MosaicFlags(mosaicFlagsValue), // モザイク設定
-    0, // divisibility(過分性、小数点以下の桁数)
+    new models.MosaicNonce(nonce), // ナンス
+    new models.MosaicFlags(mosaicFlagsValue), // モザイク定義用のフラグ
+    0, // 可分性 小数点以下の桁数
   )
 
-const amount = 100
-
-// モザイク供給量変更トランザクションの作成
 const mosaicSupplyChangeDescriptor =
+  // モザイク供給量変更トランザクション
   new descriptors.MosaicSupplyChangeTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id), // モザイクID
-    new models.Amount(BigInt(amount)), // 供給量
-    models.MosaicSupplyChangeAction.INCREASE, // 供給量変更アクション（0: Decrease, 1: Increase）
+    new models.Amount(100n), // 供給量
+    models.MosaicSupplyChangeAction.INCREASE, // 増やす(INCREASE)減らす(DECREASE)
   )
 
-// 転送トランザクション
 const transferDescriptor =
   new descriptors.TransferTransactionV1Descriptor(
     accountB.address, // 送信先アカウントのアドレス
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(id), // 作成したモザイクID
+        new models.UnresolvedMosaicId(id), // 生成したモザイクID
         new models.Amount(1n), // 1mosaic
       ),
     ],
@@ -62,7 +59,7 @@ const transferDescriptor =
 const txs = [
   {
     transaction: mosaicDefinitionDescriptor,
-    signer: accountA.publicKey,
+    signer: accountA.publicKey, 
   },
   {
     transaction: mosaicSupplyChangeDescriptor,
@@ -74,35 +71,39 @@ const txs = [
   },
 ]
 
+// ３つのトランザクションを配列にする
 const innerTransactions = txs.map((tx) =>
   facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
+    tx.transaction, // descriptorの指定
+    tx.signer, // 署名者の公開鍵
+    // その他のパラメータはアグリゲートトランザクション側で指定する
   ),
 )
 
-const innerTransactionHash =
-  SymbolFacade.hashEmbeddedTransactions(innerTransactions)
+// インナー（アグリゲートに内包する）トランザクションのハッシュを生成
+const innerTransactionHash = SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
 const aggregateDescriptor =
+  // アグリゲートトランザクション
   new descriptors.AggregateCompleteTransactionV2Descriptor(
-    innerTransactionHash,
-    innerTransactions,
+    innerTransactionHash, //インナートランザクションのハッシュを指定
+    innerTransactions, //インナートランザクションを指定
   )
 
+// アグリゲートトランザクションの生成
 const txAgg = facade.createTransactionFromTypedDescriptor(
-  aggregateDescriptor,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
+  aggregateDescriptor, // descriptorの指定
+  accountA.publicKey, // 署名者の公開鍵
+  100, // 手数料乗数はアグリゲートトランザクション側で指定する
+  60 * 60 * 2, // 有効期限はアグリゲートトランザクション側で指定する
 )
 
-const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const signatureAgg = accountA.signTransaction(txAgg)
 const jsonPayloadAgg =
   facade.transactionFactory.static.attachSignature(
     txAgg,
     signatureAgg,
-  ) // ペイロード
+  )
 
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -115,6 +116,8 @@ console.log({ responseAgg })
 const hashAgg = facade.hashTransaction(txAgg)
 
 console.log("===モザイク発行及び転送トランザクション===")
+
+// トランザクションの状態を確認する処理を関数化
 await awaitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,

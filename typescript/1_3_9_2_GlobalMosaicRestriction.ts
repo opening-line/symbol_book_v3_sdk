@@ -10,7 +10,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
-import { sendTransaction } from "./functions/sendTransaction"
+import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -21,7 +21,7 @@ const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-// 事前アカウント作成
+// 事前アカウント生成
 const allowedAccount1 = facade.createAccount(PrivateKey.random())
 const allowedAccount2 = facade.createAccount(PrivateKey.random())
 const notAllowedAccount1 = facade.createAccount(PrivateKey.random())
@@ -51,13 +51,13 @@ const transferDescriptorPre =
     ],
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptorPre,
   accountA,
   "事前手数料転送トランザクション",
 )
 
-//allowedAccount1による制限付きモザイクの作成
+//allowedAccount1による制限付きモザイクの生成
 
 const mosaicFlagsValue =
   models.MosaicFlags.TRANSFERABLE.value | // 第三者に転送可能にするか
@@ -66,7 +66,7 @@ const mosaicFlagsValue =
 const nonce = Math.floor(Math.random() * 0xffffffff)
 const id = generateMosaicId(allowedAccount1.address, nonce)
 
-// モザイク定義トランザクションの作成
+// モザイク定義トランザクションの生成
 const mosaicDefinitionDescriptor =
   new descriptors.MosaicDefinitionTransactionV1Descriptor(
     new models.MosaicId(id), // モザイクID
@@ -76,13 +76,11 @@ const mosaicDefinitionDescriptor =
     0, // divisibility(過分性、小数点以下の桁数)
   )
 
-const amount = 100
-
-// モザイク供給量変更トランザクションの作成
+// モザイク供給量変更トランザクションの生成
 const mosaicSupplyChangeDescriptor =
   new descriptors.MosaicSupplyChangeTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id), // モザイクID
-    new models.Amount(BigInt(amount)), // 供給量
+    new models.Amount(100n), // 供給量
     models.MosaicSupplyChangeAction.INCREASE, // 供給量変更アクション（0: Decrease, 1: Increase）
   )
 
@@ -259,7 +257,7 @@ const transferDescriptor1 =
     ],
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor1,
   allowedAccount1,
   "制限付きモザイクが許可されたアカウントへの転送トランザクション",
@@ -277,7 +275,7 @@ const transferDescriptor2 =
     ],
   )
 
-await sendTransaction(
+await createAndSendTransaction(
   transferDescriptor2,
   allowedAccount1,
   "制限付きモザイクが許可されてないアカウントへの転送トランザクション",

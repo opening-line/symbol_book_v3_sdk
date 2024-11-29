@@ -125,9 +125,10 @@ console.log({ responseAgg })
 console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
-// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）からトランザクションを参照
 // （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）からトランザクションを参照
 // TODO 実際は ハッシュ値からTxInfoを取得してそこからtxAggを再生成する必要あり
+// もしくは自分宛の署名要求を何かの方法で検知できるか（監視あたりでチェック）
 
 // 連署者による署名
 const cosignature = accountB.cosignTransaction(txAgg, true)

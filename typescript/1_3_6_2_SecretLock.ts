@@ -1,4 +1,5 @@
-import { PrivateKey, utils } from "symbol-sdk"
+// シークレット（ロック用のキー）とプルーフ（解除用のキー）を使って特定のモザイクの送付をロックしておくコード
+import { PrivateKey, utils, Hash256 } from "symbol-sdk"
 import {
   Network,
   SymbolFacade,
@@ -10,43 +11,43 @@ import dotenv from "dotenv"
 import sha3 from "js-sha3"
 import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-const proof = crypto.getRandomValues(new Uint8Array(20)) // ロック解除用
-// 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
-const proofHex = utils.uint8ToHex(proof)
+// 乱数でプルーフを生成する
+const randomUint8 = crypto.getRandomValues(new Uint8Array(20))
+// 16進数の文字列に変換
+const proof = utils.uint8ToHex(randomUint8)
 
+// SHA3-256ハッシュオブジェクトを作成
 const hashObject = sha3.sha3_256.create()
-hashObject.update(proof)
+// 同じ乱数をハッシュオブジェクトに追加
+hashObject.update(randomUint8)
 
-const secret = hashObject.digest() // ロック用
-// 16進数の文字列 Uint8に戻す場合は utils.hexToUint8を使う
-const secretHex = hashObject.hex()
+// ハッシュオブジェクトからシークレット（ロック用のキー）を生成
+// 16進数の文字列に変換 
+const secret = hashObject.hex()
 
-console.log(proofHex)
-console.log(secretHex)
+console.log({proof})
+console.log({secret})
 
-// シークレットロックトランザクション生成/署名/アナウンス
 const secretLock1Descriptor =
+  // シークレットロックトランザクション
   new descriptors.SecretLockTransactionV1Descriptor(
-    accountB.address, // 解除先のアドレス
-    secret as unknown as models.Hash256, // ロック用
+    accountB.address, // 送付先（解除先）のアドレス
+    new Hash256(utils.hexToUint8(secret)), // シークレット
     new descriptors.UnresolvedMosaicDescriptor(
       // ロックしておくモザイクを指定
       new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
       new models.Amount(1000000n),
     ),
-    new models.BlockDuration(480n), // ロックしておくブロック数（1ブロック約30秒）
-    models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
+    new models.BlockDuration(480n), // ロック期間（ブロック数）
+    models.LockHashAlgorithm.SHA3_256, // ロック生成に使用するアルゴリズム
   )
 
 await createAndSendTransaction(
@@ -55,13 +56,17 @@ await createAndSendTransaction(
   "シークレットロックトランザクション",
 )
 
-// シークレットプルーフトランザクション生成/署名/
+// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// ロックしているシークレット（オンチェーン上でも確認可能）を参照
+// メール等何かの方法でプルーフを確認
+
 const proofDescriptor =
+  // シークレットプルーフトランザクション
   new descriptors.SecretProofTransactionV1Descriptor(
     accountB.address, // 解除先のアドレス
-    secret as unknown as models.Hash256, // ロック用
+    new Hash256(utils.hexToUint8(secret)), // シークレット
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
-    proof, // 解除用
+    utils.hexToUint8(proof), // プルーフ
   )
 
 await createAndSendTransaction(

@@ -8,6 +8,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
+import { sendTransaction } from "./functions/sendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -99,36 +100,7 @@ const hashLockDescriptor =
     hashAgg,
   )
 
-const txLock = facade.createTransactionFromTypedDescriptor(
-  hashLockDescriptor,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
-)
-
-const signatureLock = accountA.signTransaction(txLock) // 署名
-const jsonPayloadLock =
-  facade.transactionFactory.static.attachSignature(
-    txLock,
-    signatureLock,
-  ) // ペイロード
-
-const responseLock = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadLock,
-}).then((res) => res.json())
-
-console.log({ responseLock })
-
-const hashLock = facade.hashTransaction(txLock)
-
-console.log("===ハッシュロックトランザクション===")
-await awaitTransactionStatus(
-  hashLock.toString(),
-  NODE_URL,
-  "confirmed",
-)
+await sendTransaction(hashLockDescriptor, accountA, "ハッシュロックトランザクション")
 
 // ロックTxが全ノードに伝播されるまで少し時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000)) // 1秒待機

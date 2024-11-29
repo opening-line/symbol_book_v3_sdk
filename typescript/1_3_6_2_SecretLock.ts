@@ -7,8 +7,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 import sha3 from "js-sha3"
+import { sendTransaction } from "./functions/sendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -49,36 +49,7 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
   )
 
-const txLock = facade.createTransactionFromTypedDescriptor(
-  secretLock1Descriptor,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
-)
-
-const signatureLock = accountA.signTransaction(txLock) // 署名
-const jsonPayloadLock =
-  facade.transactionFactory.static.attachSignature(
-    txLock,
-    signatureLock,
-  ) // ペイロード
-
-const responseLock = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadLock,
-}).then((res) => res.json())
-
-console.log({ responseLock })
-
-const hashLock = facade.hashTransaction(txLock)
-
-console.log("===シークレットロックトランザクション===")
-await awaitTransactionStatus(
-  hashLock.toString(),
-  NODE_URL,
-  "confirmed",
-)
+await sendTransaction(secretLock1Descriptor, accountA, "シークレットロックトランザクション")
 
 // シークレットプルーフトランザクション作成/署名/
 const proofDescriptor =
@@ -89,36 +60,4 @@ const proofDescriptor =
     proof, // 解除用
   )
 
-const txProof = facade.createTransactionFromTypedDescriptor(
-  proofDescriptor,
-  accountB.publicKey, // 解除する側を指定
-  100,
-  60 * 60 * 2,
-)
-
-const signatureProof = accountB.signTransaction(txProof) // 署名
-const jsonPayloadProof =
-  facade.transactionFactory.static.attachSignature(
-    txProof,
-    signatureProof,
-  ) // ペイロード
-
-const responseProof = await fetch(
-  new URL("/transactions", NODE_URL),
-  {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: jsonPayloadProof,
-  },
-).then((res) => res.json())
-
-console.log({ responseProof })
-
-const hashProof = facade.hashTransaction(txProof)
-
-console.log("===シークレットプルーフトランザクション===")
-await awaitTransactionStatus(
-  hashProof.toString(),
-  NODE_URL,
-  "confirmed",
-)
+await sendTransaction(proofDescriptor, accountB, "シークレットプルーフトランザクション")

@@ -39,7 +39,7 @@ const subNameSpaceId = generateNamespaceId(
   rootNameSpaceId,
 )
 
-const subNamespaceDescriptor =
+const subNamespaceRegistrationDescriptor =
   // ネームスペース登録トランザクション
   new descriptors.NamespaceRegistrationTransactionV1Descriptor(
     new models.NamespaceId(subNameSpaceId), // ネームスペースID
@@ -66,7 +66,7 @@ const txs = [
     signer: accountA.publicKey,
   },
   {
-    transaction: subNamespaceDescriptor,
+    transaction: subNamespaceRegistrationDescriptor,
     signer: accountA.publicKey,
   },
   {
@@ -91,28 +91,28 @@ const aggregateDescriptor =
     innerTransactions,
   )
 
-const tx = facade.createTransactionFromTypedDescriptor(
+const txAgg = facade.createTransactionFromTypedDescriptor(
   aggregateDescriptor,
   accountA.publicKey,
   100,
   60 * 60 * 2,
 )
 
-const signature = accountA.signTransaction(tx) // 署名
-const jsonPayload = facade.transactionFactory.static.attachSignature(
-  tx,
-  signature,
+const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const jsonPayloadAgg = facade.transactionFactory.static.attachSignature(
+  txAgg,
+  signatureAgg,
 ) // ペイロード
 
-const response = await fetch(new URL("/transactions", NODE_URL), {
+const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
-  body: jsonPayload,
+  body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ response })
+console.log({ responseAgg })
 
-const hash = facade.hashTransaction(tx)
+const hashAgg = facade.hashTransaction(txAgg)
 
 console.log("===ネームスペースレンタル及びリンクトランザクション===")
-await awaitTransactionStatus(hash.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "confirmed")

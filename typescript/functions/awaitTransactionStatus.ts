@@ -4,7 +4,7 @@ export async function awaitTransactionStatus(
   transactionStatus: "confirmed" | "unconfirmed" | "partial",
 ) {
   // アナウンスがノード間で伝播されるまで1秒待機
-  await new Promise((res) => setTimeout(res, 1000))    
+  await new Promise((res) => setTimeout(res, 1000))
   // Txが指定したステータス状態になるまで待つ
   console.log(`${transactionStatus}状態まで待機中..`)
   await new Promise(async (resolve, reject) => {
@@ -23,7 +23,7 @@ export async function awaitTransactionStatus(
         status.group === "failed" ||
         status.code == "ResourceNotFound"
       ) {
-        console.log("エラー ", status.code)
+        console.log("結果　エラー ", status.code)
         resolve({})
         return // エラーを検知した場合は終了
       }

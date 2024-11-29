@@ -46,7 +46,7 @@ console.log(
 )
 
 // 転送トランザクション1（手数料分のxym送付）
-const transferDescriptor1 =
+const transferDescriptorPre1 =
   new descriptors.TransferTransactionV1Descriptor(
     multisigAccount.address, // 送信先アカウントのアドレス
     [
@@ -58,7 +58,7 @@ const transferDescriptor1 =
   )
 
 // 転送トランザクション2（手数料分のxym送付）
-const transferDescriptor2 =
+const transferDescriptorPre2 =
   new descriptors.TransferTransactionV1Descriptor(
     cosigAccount1.address, // 送信先アカウントのアドレス
     [
@@ -71,11 +71,11 @@ const transferDescriptor2 =
 
 const txsPre = [
   {
-    transaction: transferDescriptor1,
+    transaction: transferDescriptorPre1,
     signer: accountA.publicKey,
   },
   {
-    transaction: transferDescriptor2,
+    transaction: transferDescriptorPre2,
     signer: accountA.publicKey,
   },
 ]

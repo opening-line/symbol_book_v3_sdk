@@ -7,6 +7,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
+import { sendTransaction } from "./functions/sendTransaction"
 
 // dotenvの設定
 dotenv.config()
@@ -106,12 +107,10 @@ subscribe(unconfirmedChannelName, (tx: any) =>
 // WebSocket開始
 initializeWebSocket()
 
-// 接続が確立するまで90秒待つ
-await new Promise((resolve) => setTimeout(resolve, 90000))
+// 接続が確立するまで1秒待つ
+await new Promise((resolve) => setTimeout(resolve, 1000))
 
-const message = "\0Hello, Symbol!"
-
-// 転送トランザクション
+// 監視確認用トランザクション
 const transferDescriptor =
   new descriptors.TransferTransactionV1Descriptor(
     accountB.address,
@@ -121,26 +120,7 @@ const transferDescriptor =
         new models.Amount(1000000n),
       ),
     ],
-    message,
+    "\0Hello, Symbol!",
   )
 
-const tx = facade.createTransactionFromTypedDescriptor(
-  transferDescriptor,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
-)
-
-const signature = accountA.signTransaction(tx)
-const jsonPayload = facade.transactionFactory.static.attachSignature(
-  tx,
-  signature,
-)
-
-const response = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayload,
-}).then((res) => res.json())
-
-console.log({ response })
+await sendTransaction(transferDescriptor, accountA, "監視確認用トランザクション")

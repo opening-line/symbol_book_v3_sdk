@@ -1,3 +1,4 @@
+// メタデータをアカウントに紐づけるコード
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -10,35 +11,38 @@ import {
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
-// メタデータのキー
+// メタデータのキーの指定
+// 紐づける対象の中でユニークである必要がある
 const keyText = "key_" + Math.random().toString(36).substring(2, 7)
-const valueText = "test" // 　メタデータの値
-const metadataKey = metadataGenerateKey(keyText) // bigIntに変換
+// メタデータの値の指定
+const valueText = "test"
+// bigIntに変換
+const metadataKey = metadataGenerateKey(keyText)
+// 文字列をエンコードしてUint8Arrayに変換するためのインターフェース
 const textEncoder = new TextEncoder()
+// 古い値を新しい値に更新するためのメタデータペイロードを作成
 const metadataValue = metadataUpdateValue(
-  textEncoder.encode(""),
-  textEncoder.encode(valueText),
-) // Uint8Arrayに変換
+  textEncoder.encode(""), // 古い値を指定 （初回は空文字）
+  textEncoder.encode(valueText), // 新しい値を指定
+)
 
 const accountMetadataDescriptor =
   // アカウントメタデータ登録トランザクション
   new descriptors.AccountMetadataTransactionV1Descriptor(
-    accountA.address,
-    metadataKey,
-    metadataValue.length,
-    metadataValue,
+    accountA.address, //紐付ける対象のアカウントアドレス
+    metadataKey, //紐づけるメタデータのキー
+    metadataValue.length, //紐づけるメタデータの長さ
+    metadataValue, //紐づけるメタデータの値
   )
 
-// メタデータ登録はアグリゲートトランザクションにする必要がある
+// メタデータのトランザクションはアグリゲートトランザクションに指定する必要がある
 const innerTransactions = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
     accountMetadataDescriptor,
@@ -62,12 +66,12 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const signatureAgg = accountA.signTransaction(txAgg)
 const jsonPayloadAgg =
   facade.transactionFactory.static.attachSignature(
     txAgg,
     signatureAgg,
-  ) // ペイロード
+  )
 
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",

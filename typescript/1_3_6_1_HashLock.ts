@@ -130,8 +130,7 @@ const cosignature = accountB.cosignTransaction(txAgg, true)
 
 // アナウンス
 const cosignatureRequest = {
-  // @ts-ignore 型情報にparentHashが含まれていため
-  parentHash: cosignature.parentHash.toString(),
+  parentHash: hashAgg.toString(),
   signature: cosignature.signature.toString(),
   signerPublicKey: cosignature.signerPublicKey.toString(),
   version: cosignature.version.toString(),

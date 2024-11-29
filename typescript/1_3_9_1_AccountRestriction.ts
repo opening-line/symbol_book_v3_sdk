@@ -137,16 +137,17 @@ await awaitTransactionStatus(
 )
 
 // 特定のアドレスからの受信禁止制限フラグ(restrictedAccount1に対してaccountAからの受信を禁止)
-const flagBlockIncomingAddress = new models.AccountRestrictionFlags(
-  models.AccountRestrictionFlags.ADDRESS.value + // 制限対象 アカウント
-    models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否 （許可の場合はフラグの追加は不要）
-  // 制限の方向 受信 (受信の場合はフラグの追加は不要)
-)
+const blockIncomingAddressFlagValue =
+  new models.AccountRestrictionFlags(
+    models.AccountRestrictionFlags.ADDRESS.value | // 制限対象 アカウント
+      models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否 （許可の場合はフラグの追加は不要）
+    // 制限の方向 受信 (受信の場合はフラグの追加は不要)
+  )
 
 // アカウント制限トランザクション
 const accountAddressRestrictionDescriptor =
   new descriptors.AccountAddressRestrictionTransactionV1Descriptor(
-    flagBlockIncomingAddress, // フラグの指定
+    blockIncomingAddressFlagValue, // フラグの指定
     [
       accountA.address, // 対象アドレス（制限をかけるアカウントでなく、制限対象のアドレス）
     ],
@@ -192,11 +193,15 @@ const transferDescriptor1 =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(transferDescriptor1, accountA, "アカウント受信禁止確認用トランザクション")
+await sendTransaction(
+  transferDescriptor1,
+  accountA,
+  "アカウント受信禁止確認用トランザクション",
+)
 
 // 特定のモザイクの受信禁止制限フラグ(restrictedAccount2に対してxymの受信を禁止)
-const flagBlockMosaic = new models.AccountRestrictionFlags(
-  models.AccountRestrictionFlags.MOSAIC_ID.value + // 制限対象 モザイク
+const blockMosaicFlagsValue = new models.AccountRestrictionFlags(
+  models.AccountRestrictionFlags.MOSAIC_ID.value | // 制限対象 モザイク
     models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否 （許可の場合はフラグの追加は不要）
   // 制限の方向 受信のみ
 )
@@ -204,7 +209,7 @@ const flagBlockMosaic = new models.AccountRestrictionFlags(
 // モザイク制限トランザクション
 const accountMosaicRestrictionDescriptor =
   new descriptors.AccountMosaicRestrictionTransactionV1Descriptor(
-    flagBlockMosaic, // フラグの指定
+    blockMosaicFlagsValue, // フラグの指定
     [
       // 設定モザイク
       new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
@@ -255,21 +260,24 @@ const transferDescriptor2 =
     ],
   )
 
-await sendTransaction(transferDescriptor2, accountA, "モザイク受信禁止確認用トランザクション")
-
+await sendTransaction(
+  transferDescriptor2,
+  accountA,
+  "モザイク受信禁止確認用トランザクション",
+)
 
 // 特定のトランザクションの送信禁止制限フラグ(restrictedAccount3の転送トランザクションの送信を禁止)
-const flagAccountOperationRestriction =
+const accountOperationRestrictionFlagsValue =
   new models.AccountRestrictionFlags(
-    models.AccountRestrictionFlags.TRANSACTION_TYPE.value + // 制限対象 モザイク
-      models.AccountRestrictionFlags.BLOCK.value + // 制限内容 拒否 （許可の場合はフラグの追加は不要）
+    models.AccountRestrictionFlags.TRANSACTION_TYPE.value | // 制限対象 モザイク
+      models.AccountRestrictionFlags.BLOCK.value | // 制限内容 拒否 （許可の場合はフラグの追加は不要）
       models.AccountRestrictionFlags.OUTGOING.value, // 制限の方向 送信のみ
   )
 
 // トランザクション制限トランザクション
 const accountOperationRestrictionDescriptor =
   new descriptors.AccountOperationRestrictionTransactionV1Descriptor(
-    flagAccountOperationRestriction, // フラグの指定
+    accountOperationRestrictionFlagsValue, // フラグの指定
     [
       // トランザクションタイプの設定
       models.TransactionType.TRANSFER.value,
@@ -316,4 +324,8 @@ const transferDescriptor3 =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(transferDescriptor3, restrictedAccount3, "トランザクション送信禁止確認用トランザクション")
+await sendTransaction(
+  transferDescriptor3,
+  restrictedAccount3,
+  "トランザクション送信禁止確認用トランザクション",
+)

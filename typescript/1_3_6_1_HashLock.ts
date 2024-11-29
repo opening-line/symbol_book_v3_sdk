@@ -100,7 +100,11 @@ const hashLockDescriptor =
     hashAgg,
   )
 
-await sendTransaction(hashLockDescriptor, accountA, "ハッシュロックトランザクション")
+await sendTransaction(
+  hashLockDescriptor,
+  accountA,
+  "ハッシュロックトランザクション",
+)
 
 // ロックTxが全ノードに伝播されるまで少し時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000)) // 1秒待機

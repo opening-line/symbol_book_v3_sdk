@@ -123,4 +123,8 @@ const transferDescriptor =
     "\0Hello, Symbol!",
   )
 
-await sendTransaction(transferDescriptor, accountA, "監視確認用トランザクション")
+await sendTransaction(
+  transferDescriptor,
+  accountA,
+  "監視確認用トランザクション",
+)

@@ -63,10 +63,11 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
 )
 
 const signatureAgg = accountA.signTransaction(txAgg) // 署名
-const jsonPayloadAgg = facade.transactionFactory.static.attachSignature(
-  txAgg,
-  signatureAgg,
-) // ペイロード
+const jsonPayloadAgg =
+  facade.transactionFactory.static.attachSignature(
+    txAgg,
+    signatureAgg,
+  ) // ペイロード
 
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -79,4 +80,8 @@ console.log({ responseAgg })
 const hashAgg = facade.hashTransaction(txAgg)
 
 console.log("===アカウントメタデータトランザクション===")
-await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashAgg.toString(),
+  NODE_URL,
+  "confirmed",
+)

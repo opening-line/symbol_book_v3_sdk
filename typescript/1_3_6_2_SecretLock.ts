@@ -49,7 +49,11 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用したアルゴリズム
   )
 
-await sendTransaction(secretLock1Descriptor, accountA, "シークレットロックトランザクション")
+await sendTransaction(
+  secretLock1Descriptor,
+  accountA,
+  "シークレットロックトランザクション",
+)
 
 // シークレットプルーフトランザクション作成/署名/
 const proofDescriptor =
@@ -60,4 +64,8 @@ const proofDescriptor =
     proof, // 解除用
   )
 
-await sendTransaction(proofDescriptor, accountB, "シークレットプルーフトランザクション")
+await sendTransaction(
+  proofDescriptor,
+  accountB,
+  "シークレットプルーフトランザクション",
+)

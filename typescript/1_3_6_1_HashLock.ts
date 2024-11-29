@@ -1,3 +1,4 @@
+// アグリゲートボンデッドトランザクションをハッシュロックし、オンチェーン上で連署を行う
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -10,10 +11,8 @@ import dotenv from "dotenv"
 import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -21,25 +20,24 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// アグリゲートボンデッドトランザクションの生成と署名
 
-// 転送トランザクション1(accountA=>accountB)
 const transferDescriptor1 =
+// 転送トランザクション1(accountA=>accountB)
   new descriptors.TransferTransactionV1Descriptor(
-    accountB.address, // 送信先アカウントのアドレス
+    accountB.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(1000000n), // 1xym
+        new models.Amount(1000000n), // 1.000000xym
       ),
     ],
     "\0Send 1XYM",
   )
 
-// 転送トランザクション2(accountB=>accountA)
 const transferDescriptor2 =
+// 転送トランザクション2(accountB=>accountA)
   new descriptors.TransferTransactionV1Descriptor(
-    accountA.address, // 送信先アカウントのアドレス
+    accountA.address,
     [],
     "\0OK",
   )
@@ -79,38 +77,40 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   1, // 連署者数
 )
 
-const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const signatureAgg = accountA.signTransaction(txAgg)
 const jsonPayloadAgg =
   facade.transactionFactory.static.attachSignature(
     txAgg,
     signatureAgg,
-  ) // ペイロード
+  )
 
+// ハッシュロックに必要なトランザクションハッシュの生成
 const hashAgg = facade.hashTransaction(txAgg)
 
-// ハッシュロックトランザクションの生成、署名、アナウンス
-
 const hashLockDescriptor =
+// ハッシュロックトランザクション
   new descriptors.HashLockTransactionV1Descriptor(
     new descriptors.UnresolvedMosaicDescriptor(
       new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-      new models.Amount(10000000n), // ロック用に１０XYMを預ける
+      new models.Amount(10000000n), // ロック用に固定で１０XYMを預ける
     ),
-    new models.BlockDuration(5760n), // ロック期間
-    hashAgg,
+    new models.BlockDuration(5760n), // ロック期間（ブロック数）
+    hashAgg, // ロックしたいトランザクションのハッシュ
   )
 
+// アグリゲートでないトランザクションは生成から確認まで同じ処理なので関数化 
 await createAndSendTransaction(
   hashLockDescriptor,
   accountA,
   "ハッシュロックトランザクション",
 )
 
-// ロックTxが全ノードに伝播されるまで少し時間を置く
-await new Promise((resolve) => setTimeout(resolve, 1000)) // 1秒待機
+// ハッシュロックトランザクションが全ノードに伝播されるまで一秒ほど時間を置く
+await new Promise((resolve) => setTimeout(resolve, 1000))
 
-// アグリゲートボンデッドトランザクションのアナウンス 注意 アグリゲートボンデッドの場合エンドポイントが異なるので注意
+// アグリゲートボンデッドトランザクションのアナウンス
 const responseAgg = await fetch(
+  // エンドポイントがに/transactions/partialであることに注意
   new URL("/transactions/partial", NODE_URL),
   {
     method: "PUT",
@@ -121,22 +121,30 @@ const responseAgg = await fetch(
 
 console.log({ responseAgg })
 
-// 部分承認状態（partial）になることを確認
+// partial（オンチェーン上で連署待ちの状態）の確認
 console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
-// 署名要求トランザクションの確認と連署
+// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）からトランザクションを参照
+// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// TODO 実際は ハッシュ値からTxInfoを取得してそこからtxAggを再生成する必要あり
+
+// 連署者による署名
 const cosignature = accountB.cosignTransaction(txAgg, true)
 
-// アナウンス
 const cosignatureRequest = {
-  parentHash: hashAgg.toString(),
+  //連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
+  parentHash: facade.hashTransaction(txAgg).toString(), 
+  //署名部分 
   signature: cosignature.signature.toString(),
+  //連署者の公開鍵 
   signerPublicKey: cosignature.signerPublicKey.toString(),
+  //署名したトランザクションのバージョン
   version: cosignature.version.toString(),
 }
 
 const responseCos = await fetch(
+  // エンドポイントがに/transactions/cosignatureであることに注意  
   new URL("/transactions/cosignature", NODE_URL),
   {
     method: "PUT",

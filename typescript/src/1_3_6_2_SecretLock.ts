@@ -9,8 +9,8 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import { createAndSendTransaction } from "./functions/createAndSendTransaction"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
+import { createAndSendTransaction } from "../functions/createAndSendTransaction"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
 
 dotenv.config()
 

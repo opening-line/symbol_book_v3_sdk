@@ -1,5 +1,5 @@
 # deps
 node_modules/
-
+logs/
 # env
 .env

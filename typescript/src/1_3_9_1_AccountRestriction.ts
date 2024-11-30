@@ -1,3 +1,4 @@
+// アカウントに対する制限を設定するコード
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -7,13 +8,11 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
-import { createAndSendTransaction } from "./functions/createAndSendTransaction"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { createAndSendTransaction } from "../functions/createAndSendTransaction"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -37,38 +36,41 @@ console.log(
   restrictedAccount3.address.toString(),
 )
 
-// 転送トランザクション1（手数料分のxym送付）
+// 転送トランザクション1
+// （アカウント制限に必要な手数料を送付）
 const transferDescriptorPre1 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount1.address, // 送信先アカウントのアドレス
+    restrictedAccount1.address, 
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(10000000n), // 10xym
+        new models.Amount(1000000n), // 1xym
       ),
     ],
   )
 
-// 転送トランザクション2（手数料分のxym送付）
+// 転送トランザクション2
+// （アカウント制限に必要な手数料を送付）
 const transferDescriptorPre2 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount2.address, // 送信先アカウントのアドレス
+    restrictedAccount2.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(10000000n), // 10xym
+        new models.Amount(1000000n), // 1xym
       ),
     ],
   )
 
-// 転送トランザクション3（手数料分のxym送付）
+// 転送トランザクション3
+// （アカウント制限に必要な手数料を送付）
 const transferDescriptorPre3 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount3.address, // 送信先アカウントのアドレス
+    restrictedAccount3.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(10000000n), // 10xym
+        new models.Amount(1000000n), // 1xym
       ),
     ],
   )
@@ -112,12 +114,12 @@ const txPre = facade.createTransactionFromTypedDescriptor(
   60 * 60 * 2,
 )
 
-const signaturePre = accountA.signTransaction(txPre) // 署名
+const signaturePre = accountA.signTransaction(txPre)
 const jsonPayloadPre =
   facade.transactionFactory.static.attachSignature(
     txPre,
     signaturePre,
-  ) // ペイロード
+  )
 
 const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -136,37 +138,37 @@ await awaitTransactionStatus(
   "confirmed",
 )
 
-// 特定のアドレスからの受信禁止制限フラグ(restrictedAccount1に対してaccountAからの受信を禁止)
+// 特定のアドレスからの受信禁止制限フラグ値
+// (restrictedAccount1に対してaccountAからの受信を禁止)
 const blockIncomingAddressFlagValue =
   new models.AccountRestrictionFlags(
     models.AccountRestrictionFlags.ADDRESS.value | // 制限対象 アカウント
-      models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否 （許可の場合はフラグの追加は不要）
-    // 制限の方向 受信 (受信の場合はフラグの追加は不要)
+      models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否
   )
 
-// アカウント制限トランザクション
 const accountAddressRestrictionDescriptor =
+  // アカウント制限トランザクション
   new descriptors.AccountAddressRestrictionTransactionV1Descriptor(
     blockIncomingAddressFlagValue, // フラグの指定
     [
-      accountA.address, // 対象アドレス（制限をかけるアカウントでなく、制限対象のアドレス）
+      accountA.address, // 対象アドレスリスト（署名するアカウントではない事に注意）
     ],
-    [], // 解除対象アドレス
+    [], // 解除対象アドレスリスト
   )
 
 const txRr1 = facade.createTransactionFromTypedDescriptor(
   accountAddressRestrictionDescriptor,
-  restrictedAccount1.publicKey, // 設定アカウントの公開鍵
+  restrictedAccount1.publicKey, // 署名者の公開鍵
   100,
   60 * 60 * 2,
 )
 
-const signatureRr1 = restrictedAccount1.signTransaction(txRr1) // 署名
+const signatureRr1 = restrictedAccount1.signTransaction(txRr1)
 const jsonPayloadRr1 =
   facade.transactionFactory.static.attachSignature(
     txRr1,
     signatureRr1,
-  ) // ペイロード
+  )
 
 const responseRr1 = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -186,11 +188,12 @@ await awaitTransactionStatus(
 )
 
 // アカウント受信禁止トランザクションの確認
+// 制限がかかりエラーになることを確認する
 const transferDescriptor1 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount1.address, // 送信先アカウントのアドレス
+    restrictedAccount1.address,
     [],
-    "\0Hello, Symbol!",
+    "\0Hello, restrictedAccount1!",
   )
 
 const hashTf1 = await createAndSendTransaction(
@@ -198,40 +201,39 @@ const hashTf1 = await createAndSendTransaction(
   accountA
 )
 
-console.log("===アカウント受信禁止確認用トランザクション===")
+console.log("===確認用アカウント受信禁止トランザクション===")
 await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
 
-// 特定のモザイクの受信禁止制限フラグ(restrictedAccount2に対してxymの受信を禁止)
+// 特定のモザイクの受信禁止制限フラグ値
+// (restrictedAccount2に対してxymの受信を禁止)
 const blockMosaicFlagsValue = new models.AccountRestrictionFlags(
   models.AccountRestrictionFlags.MOSAIC_ID.value | // 制限対象 モザイク
-    models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否 （許可の場合はフラグの追加は不要）
-  // 制限の方向 受信のみ
+    models.AccountRestrictionFlags.BLOCK.value, // 制限内容 拒否
 )
 
-// モザイク制限トランザクション
 const accountMosaicRestrictionDescriptor =
+  // モザイク制限トランザクション
   new descriptors.AccountMosaicRestrictionTransactionV1Descriptor(
     blockMosaicFlagsValue, // フラグの指定
     [
-      // 設定モザイク
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // 対象モザイクリスト
     ],
-    [], // 解除対象モザイク
+    [], // 解除対象モザイクリスト
   )
 
 const txRr2 = facade.createTransactionFromTypedDescriptor(
   accountMosaicRestrictionDescriptor,
-  restrictedAccount2.publicKey, // 設定アカウントの公開鍵
+  restrictedAccount2.publicKey, // 署名者の公開鍵
   100,
   60 * 60 * 2,
 )
 
-const signatureRr2 = restrictedAccount2.signTransaction(txRr2) // 署名
+const signatureRr2 = restrictedAccount2.signTransaction(txRr2)
 const jsonPayloadRr2 =
   facade.transactionFactory.static.attachSignature(
     txRr2,
     signatureRr2,
-  ) // ペイロード
+  )
 
 const responseRr2 = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -251,9 +253,10 @@ await awaitTransactionStatus(
 )
 
 // モザイク受信禁止トランザクションの確認
+// 制限がかかりエラーになることを確認する
 const transferDescriptor2 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount2.address, // 送信先アカウントのアドレス
+    restrictedAccount2.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
@@ -267,41 +270,41 @@ const hashTf2 = await createAndSendTransaction(
   accountA
 )
 
-console.log("===モザイク受信禁止確認用トランザクション===")
+console.log("===確認用モザイク受信禁止トランザクション===")
 await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")
 
-// 特定のトランザクションの送信禁止制限フラグ(restrictedAccount3の転送トランザクションの送信を禁止)
+// 特定のトランザクションの送信禁止制限フラグ
+// (restrictedAccount3の転送トランザクションの送信を禁止)
 const accountOperationRestrictionFlagsValue =
   new models.AccountRestrictionFlags(
     models.AccountRestrictionFlags.TRANSACTION_TYPE.value | // 制限対象 モザイク
-      models.AccountRestrictionFlags.BLOCK.value | // 制限内容 拒否 （許可の場合はフラグの追加は不要）
+      models.AccountRestrictionFlags.BLOCK.value | // 制限内容 拒否
       models.AccountRestrictionFlags.OUTGOING.value, // 制限の方向 送信のみ
   )
 
-// トランザクション制限トランザクション
 const accountOperationRestrictionDescriptor =
+  // トランザクション制限トランザクション
   new descriptors.AccountOperationRestrictionTransactionV1Descriptor(
     accountOperationRestrictionFlagsValue, // フラグの指定
     [
-      // トランザクションタイプの設定
-      models.TransactionType.TRANSFER.value,
+      models.TransactionType.TRANSFER.value, // 対象のトランザクションタイプリスト
     ],
-    [], // 解除対象のトランザクションタイプ
+    [], // 解除対象のトランザクションタイプリスト
   )
 
 const txRr3 = facade.createTransactionFromTypedDescriptor(
   accountOperationRestrictionDescriptor,
-  restrictedAccount3.publicKey, // 設定アカウントの公開鍵
+  restrictedAccount3.publicKey, // 署名者の公開鍵
   100,
   60 * 60 * 2,
 )
 
-const signatureRr3 = restrictedAccount3.signTransaction(txRr3) // 署名
+const signatureRr3 = restrictedAccount3.signTransaction(txRr3)
 const jsonPayloadRr3 =
   facade.transactionFactory.static.attachSignature(
     txRr3,
     signatureRr3,
-  ) // ペイロード
+  )
 
 const responseRr3 = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
@@ -321,11 +324,12 @@ await awaitTransactionStatus(
 )
 
 // トランザクション送信禁止トランザクションの確認
+// 制限がかかりエラーになることを確認する
 const transferDescriptor3 =
   new descriptors.TransferTransactionV1Descriptor(
-    accountA.address, // 送信先アカウントのアドレス
+    accountA.address,
     [],
-    "\0Hello, Symbol!",
+    "\0Hello, accountA!",
   )
 
 const hashTf3 = await createAndSendTransaction(
@@ -333,5 +337,5 @@ const hashTf3 = await createAndSendTransaction(
   restrictedAccount3
 )
 
-console.log("===トランザクション送信禁止確認用トランザクション===")
+console.log("===確認用トランザクション送信禁止トランザクション===")
 await awaitTransactionStatus(hashTf3.toString(), NODE_URL, "confirmed")

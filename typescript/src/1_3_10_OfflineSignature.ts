@@ -1,3 +1,4 @@
+// オフライン（オフチェーン）上で署名を集めるコード
 import { PrivateKey, utils } from "symbol-sdk"
 import {
   Network,
@@ -7,12 +8,10 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -20,11 +19,10 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// トランザクションの生成、accountAでの署名
 // 転送トランザクション1（accountA => accountB）
 const transferDescriptor1 =
   new descriptors.TransferTransactionV1Descriptor(
-    accountB.address, // 送信先アカウントのアドレス
+    accountB.address,
     [],
     "\0Hello, accountB!",
   )
@@ -32,7 +30,7 @@ const transferDescriptor1 =
 // 転送トランザクション1（accountB => accountA）
 const transferDescriptor2 =
   new descriptors.TransferTransactionV1Descriptor(
-    accountA.address, // 送信先アカウントのアドレス
+    accountA.address,
     [],
     "\0Hello, accountA!",
   )
@@ -69,42 +67,47 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   accountA.publicKey,
   100,
   60 * 60 * 2,
-  1, // 連署者数
+  1, // 連署者数（accountBの連署が必要）
 )
 
-const signatureAgg = accountA.signTransaction(txAgg) // 署名
+const signatureAgg = accountA.signTransaction(txAgg)
 const jsonPayloadAgg =
   facade.transactionFactory.static.attachSignature(
     txAgg,
     signatureAgg,
-  ) // ペイロード
+  )
 
 const payloadAgg = JSON.parse(jsonPayloadAgg).payload
 
-// accountBでのオフライン署名、アナウンス
+// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// メール等何かの方法（オフライン）でpayloadAggを送る
 
+// ペイロードからTxの復元
 const restoredTxAgg =
   models.AggregateCompleteTransactionV2.deserialize(
     utils.hexToUint8(payloadAgg),
-  ) // ペイロードからTxの復元
+  ) 
 
+//検証を行い、改ざんされていないことを確認する
 const responseVerify = facade.verifyTransaction(
   restoredTxAgg,
   restoredTxAgg.signature,
-) //ペイロードの検証
+)
 
 if (!responseVerify) throw new Error("署名の検証に失敗しました。")
 
+//accountBの連署
 const cosignB = facade.cosignTransaction(
   accountB.keyPair,
   restoredTxAgg,
 )
 
+//連署者の署名追加
 restoredTxAgg.cosignatures.push(cosignB)
 
 const jsonPayloadRestoredTxAgg = JSON.stringify({
   payload: utils.uint8ToHex(restoredTxAgg.serialize()),
-}) // ペイロード
+})
 
 const responseRestoredTxAgg = await fetch(
   new URL("/transactions", NODE_URL),

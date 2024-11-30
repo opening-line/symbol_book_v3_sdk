@@ -29,10 +29,10 @@ const transferDescriptor =
       new descriptors.UnresolvedMosaicDescriptor(
         // 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(1000000n), // 1.000000xym
+        new models.Amount(1000000n), // 1xym、xymは可分性（小数点以下）が6
       ),
     ],
-    "\0Hello, Symbol!", // メッセージ
+    "\0Hello, AccountB!", // メッセージ
   )
 
 // トランザクションの生成
@@ -75,9 +75,7 @@ await new Promise(async (resolve, reject) => {
     ).then((res) => res.json())
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
     if (status.group === "confirmed") {
-      console.log("結果 ", status.code)
-      console.log(`エクスプローラー`)
-      console.log(`https://testnet.symbol.fyi/transactions/${hash}`)
+      console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
       resolve({})
       return
     } else if (status.group === "failed") {

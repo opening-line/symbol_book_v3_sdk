@@ -9,7 +9,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
 
 dotenv.config()
 

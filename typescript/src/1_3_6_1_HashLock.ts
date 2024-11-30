@@ -8,8 +8,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
-import { createAndSendTransaction } from "./functions/createAndSendTransaction"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { createAndSendTransaction } from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -21,25 +21,25 @@ const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
 
-const transferDescriptor1 =
 // 転送トランザクション1(accountA=>accountB)
+const transferDescriptor1 =
   new descriptors.TransferTransactionV1Descriptor(
     accountB.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(1000000n), // 1.000000xym
+        new models.Amount(1000000n), // 1xym
       ),
     ],
-    "\0Send 1XYM",
+    "\0Send 1xym",
   )
 
-const transferDescriptor2 =
 // 転送トランザクション2(accountB=>accountA)
+const transferDescriptor2 =
   new descriptors.TransferTransactionV1Descriptor(
     accountA.address,
     [],
-    "\0OK",
+    "\0Thank you!",
   )
 
 const txs = [
@@ -74,7 +74,7 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   accountA.publicKey,
   100,
   60 * 60 * 2,
-  1, // 連署者数
+  1, // 連署者数が必要な場合は必ず数を指定する（accountBの連署が必要）
 )
 
 const signatureAgg = accountA.signTransaction(txAgg)
@@ -92,7 +92,7 @@ const hashLockDescriptor =
   new descriptors.HashLockTransactionV1Descriptor(
     new descriptors.UnresolvedMosaicDescriptor(
       new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-      new models.Amount(10000000n), // ロック用に固定で１０XYMを預ける
+      new models.Amount(10000000n), // ロック用に固定で10xymを預ける
     ),
     new models.BlockDuration(5760n), // ロック期間（ブロック数）
     hashAgg, // ロックしたいトランザクションのハッシュ

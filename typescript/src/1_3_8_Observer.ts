@@ -1,3 +1,4 @@
+// WebSocketを使ったトランザクションステータスの監視を行うコード
 import { PrivateKey } from "symbol-sdk"
 import {
   Network,
@@ -7,7 +8,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { createAndSendTransaction } from "./functions/createAndSendTransaction"
+import { createAndSendTransaction } from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -38,9 +39,7 @@ const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
 subscribe(confirmedChannelName, (tx: any) => {
   //承認済みトランザクションを検知した時の処理
   console.log("承認済みトランザクション:", tx)
-  console.log("結果 ", "Success")
-  console.log(`エクスプローラー`)
-  console.log(`https://testnet.symbol.fyi/transactions/${tx.meta.hash}`)
+  console.log("結果 Success", "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${tx.meta.hash}`)
 })
 subscribe(unconfirmedChannelName, (tx: any) =>{
   //承認済みトランザクションを検知した時の処理
@@ -115,7 +114,7 @@ const transferDescriptor =
         new models.Amount(1000000n),
       ),
     ],
-    "\0Hello, Symbol!",
+    "\0Hello, accountB!",
   )
 
 await createAndSendTransaction(

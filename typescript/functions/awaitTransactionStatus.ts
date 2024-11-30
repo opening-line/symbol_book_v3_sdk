@@ -14,9 +14,7 @@ export async function awaitTransactionStatus(
       ).then((res) => res.json())
       //指定したトランザクションステータスになっていたら結果を表示させる
       if (status.group === transactionStatus) {
-        console.log("結果 ", status.code)
-        console.log(`エクスプローラー`)
-        console.log(`https://testnet.symbol.fyi/transactions/${hash}`)
+        console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
         resolve({})
         return
       } else if (status.group === "failed") {

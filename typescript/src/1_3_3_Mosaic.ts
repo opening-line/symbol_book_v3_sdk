@@ -9,7 +9,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
+import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
 
 dotenv.config()
 
@@ -21,7 +21,7 @@ const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
 //モザイク定義用のフラグ値
-const mosaicFlagsValue = models.MosaicFlags.TRANSFERABLE.value //第三者に転送可能にする
+const mosaicFlagsValue = models.MosaicFlags.TRANSFERABLE.value //第三者に転送可能
 //モザイクID生成時のノンスの生成
 const nonce = Math.floor(Math.random() * 0xffffffff)
 //モザイクIDの生成

@@ -108,12 +108,7 @@ await new Promise((resolve) => setTimeout(resolve, 1000))
 const transferDescriptor =
   new descriptors.TransferTransactionV1Descriptor(
     accountB.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
-        new models.Amount(1000000n),
-      ),
-    ],
+    [],
     "\0Hello, accountB!",
   )
 

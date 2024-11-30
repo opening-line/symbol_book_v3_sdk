@@ -11,6 +11,10 @@ export async function awaitTransactionStatus(
       //トランザクションハッシュからステータスを確認
       const status = await fetch(
         new URL("/transactionStatus/" + hash, nodeUrl),
+        {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        }        
       ).then((res) => res.json())
       //指定したトランザクションステータスになっていたら結果を表示させる
       if (status.group === transactionStatus) {

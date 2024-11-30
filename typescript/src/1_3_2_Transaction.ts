@@ -7,6 +7,7 @@ import {
   models,
 } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
+import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
 
 // dotenvの設定
 dotenv.config()
@@ -72,9 +73,14 @@ await new Promise(async (resolve, reject) => {
     //トランザクションハッシュ値を指定して状態を確認
     const status = await fetch(
       new URL("/transactionStatus/" + hash, NODE_URL),
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
     ).then((res) => res.json())
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
     if (status.group === "confirmed") {
+      console.log(status)
       console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
       resolve({})
       return
@@ -86,3 +92,22 @@ await new Promise(async (resolve, reject) => {
   }
   reject(new Error("トランザクションが確認されませんでした。"))
 })
+
+//トランサクション情報を取得する
+const txInfo = await fetch(
+  new URL("/transactions/confirmed/" + hash.toString(), NODE_URL),
+  {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  }
+).then((res) => res.json())
+
+// オブジェクト内のオブジェクトを展開して表示
+console.log(JSON.stringify(txInfo, null, 2))
+
+// アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
+// アドレス：Address.fromDecodedAddressHexString(value).toString()
+// メッセージ：new TextDecoder().decode(utils.hexToUint8(value))
+// 16進数のアドレスとメッセージを変換する処理を関数化
+
+console.log(JSON.stringify(convertHexValuesInObject(txInfo), null, 2))

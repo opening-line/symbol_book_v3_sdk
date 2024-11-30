@@ -10,6 +10,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
 
 dotenv.config()
 
@@ -123,3 +124,15 @@ await awaitTransactionStatus(
   NODE_URL,
   "confirmed",
 )
+
+//モザイク情報を取得する
+const mosaicIdHex = new models.MosaicId(id).toString().replace('0x', '')
+const mosaicInfo = await fetch(
+  new URL("/mosaics/" + mosaicIdHex, NODE_URL),
+  {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  }
+).then((res) => res.json())
+
+console.log(JSON.stringify(convertHexValuesInObject(mosaicInfo), null, 2))

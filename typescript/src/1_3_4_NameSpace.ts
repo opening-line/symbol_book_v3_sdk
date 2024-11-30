@@ -10,6 +10,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
 
 dotenv.config()
 
@@ -121,3 +122,15 @@ await awaitTransactionStatus(
   NODE_URL,
   "confirmed",
 )
+
+//ネームスペース情報を取得する（サブネームスペースの情報）
+const nameSpaceIdHex = new models.NamespaceId(subNameSpaceId).toString().replace('0x', '')
+const nameSpaceInfo = await fetch(
+  new URL("/namespaces/" + nameSpaceIdHex, NODE_URL),
+  {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  }
+).then((res) => res.json())
+
+console.log(JSON.stringify(convertHexValuesInObject(nameSpaceInfo), null, 2))

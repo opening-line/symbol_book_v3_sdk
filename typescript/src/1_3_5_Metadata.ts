@@ -10,6 +10,7 @@ import {
 
 import dotenv from "dotenv"
 import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
 
 dotenv.config()
 
@@ -89,3 +90,35 @@ await awaitTransactionStatus(
   NODE_URL,
   "confirmed",
 )
+
+//メタデータ情報を取得する(アドレスに設定されているメタデータ一覧)
+const query1 = new URLSearchParams({
+  "targetAddress": accountA.address.toString(), // 設定されたアカウントアドレス
+});
+
+const metadataInfo1 = await fetch(
+  new URL("/metadata?" + query1.toString(), NODE_URL),
+  {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  }
+).then((res) => res.json())
+
+console.log(JSON.stringify(convertHexValuesInObject(metadataInfo1), null, 2))
+
+//メタデータ情報を取得する(メタデータキーが指定されているメタデータ一覧)
+//targetAddressを見ることで、特定のメタデータキーが付与されたアドレス一覧を作成できる
+const query2 = new URLSearchParams({
+  "scopedMetadataKey": metadataKey.toString(16).toUpperCase(), // メタデータキー
+  "metadataType": "0" //　アカウントメタデータは0
+});
+
+const metadataInfo2 = await fetch(
+  new URL("/metadata?" + query2.toString(), NODE_URL),
+  {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  }
+).then((res) => res.json())
+
+console.log(JSON.stringify(convertHexValuesInObject(metadataInfo2), null, 2))

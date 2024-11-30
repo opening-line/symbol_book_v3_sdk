@@ -10,9 +10,11 @@ import {
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
 import { createAndSendTransaction } from "./functions/createAndSendTransaction"
+import { awaitTransactionStatus } from "./functions/awaitTransactionStatus"
 
 dotenv.config()
 
+const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -50,11 +52,13 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用するアルゴリズム
   )
 
-await createAndSendTransaction(
+const hashLock = await createAndSendTransaction(
   secretLock1Descriptor,
-  accountA,
-  "シークレットロックトランザクション",
+  accountA
 )
+
+console.log("===シークレットロックトランザクション===")
+await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
 
 // （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
 // ロックしているシークレット（オンチェーン上でも確認可能）を参照
@@ -69,8 +73,10 @@ const proofDescriptor =
     utils.hexToUint8(proof), // プルーフ
   )
 
-await createAndSendTransaction(
+const hashProof = await createAndSendTransaction(
   proofDescriptor,
-  accountB,
-  "シークレットプルーフトランザクション",
+  accountB
 )
+
+console.log("===シークレットプルーフトランザクション===")
+await awaitTransactionStatus(hashProof.toString(), NODE_URL, "confirmed")

@@ -51,11 +51,13 @@ const transferDescriptorPre =
     ],
   )
 
-await createAndSendTransaction(
+const hashPre = await createAndSendTransaction(
   transferDescriptorPre,
-  accountA,
-  "事前手数料転送トランザクション",
+  accountA
 )
+
+console.log("===事前手数料転送トランザクション===")
+await awaitTransactionStatus(hashPre.toString(), NODE_URL, "confirmed")
 
 //allowedAccount1による制限付きモザイクの生成
 
@@ -257,11 +259,13 @@ const transferDescriptor1 =
     ],
   )
 
-await createAndSendTransaction(
+const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
-  allowedAccount1,
-  "制限付きモザイクが許可されたアカウントへの転送トランザクション",
+  allowedAccount1
 )
+
+console.log("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
+await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
 
 // allowedAccount1からallowedAccount3への制限モザイクの送付
 const transferDescriptor2 =
@@ -275,8 +279,10 @@ const transferDescriptor2 =
     ],
   )
 
-await createAndSendTransaction(
+const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
-  allowedAccount1,
-  "制限付きモザイクが許可されてないアカウントへの転送トランザクション",
+  allowedAccount1
 )
+
+console.log("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
+await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")

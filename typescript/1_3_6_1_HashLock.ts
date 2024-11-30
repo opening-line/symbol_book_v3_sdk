@@ -98,12 +98,14 @@ const hashLockDescriptor =
     hashAgg, // ロックしたいトランザクションのハッシュ
   )
 
-// アグリゲートでないトランザクションは生成から確認まで同じ処理なので関数化 
-await createAndSendTransaction(
+// アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化 
+const hashLock = await createAndSendTransaction(
   hashLockDescriptor,
-  accountA,
-  "ハッシュロックトランザクション",
+  accountA
 )
+
+console.log("===ハッシュロックトランザクション===")
+await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
 
 // ハッシュロックトランザクションが全ノードに伝播されるまで一秒ほど時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000))

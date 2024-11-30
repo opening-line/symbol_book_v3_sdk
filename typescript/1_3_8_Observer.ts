@@ -35,15 +35,17 @@ const subscribe = (channel: string, callback: Function): void => {
 const confirmedChannelName = `confirmedAdded/${accountA.address}`
 const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
 
-subscribe(confirmedChannelName, (tx: any) =>
+subscribe(confirmedChannelName, (tx: any) => {
   //承認済みトランザクションを検知した時の処理
-  console.log("承認済みトランザクション:", tx),
-)
-subscribe(unconfirmedChannelName, (tx: any) =>
-  //未承認済みトランザクションを検知した時の処理
-  console.log("未承認トランザクション:", tx),
-)
-
+  console.log("承認済みトランザクション:", tx)
+  console.log("結果 ", "Success")
+  console.log(`エクスプローラー`)
+  console.log(`https://testnet.symbol.fyi/transactions/${tx.meta.hash}`)
+})
+subscribe(unconfirmedChannelName, (tx: any) =>{
+  //承認済みトランザクションを検知した時の処理
+  console.log("未承認済みトランザクション:", tx)
+})
 // WebSocket接続の管理
 const initializeWebSocket = () => {
   const ws = new WebSocket(wsEndpoint)
@@ -118,6 +120,5 @@ const transferDescriptor =
 
 await createAndSendTransaction(
   transferDescriptor,
-  accountA,
-  "監視確認用トランザクション",
+  accountA
 )

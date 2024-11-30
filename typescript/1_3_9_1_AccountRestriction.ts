@@ -193,11 +193,13 @@ const transferDescriptor1 =
     "\0Hello, Symbol!",
   )
 
-await createAndSendTransaction(
+const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
-  accountA,
-  "アカウント受信禁止確認用トランザクション",
+  accountA
 )
+
+console.log("===アカウント受信禁止確認用トランザクション===")
+await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
 
 // 特定のモザイクの受信禁止制限フラグ(restrictedAccount2に対してxymの受信を禁止)
 const blockMosaicFlagsValue = new models.AccountRestrictionFlags(
@@ -260,11 +262,13 @@ const transferDescriptor2 =
     ],
   )
 
-await createAndSendTransaction(
+const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
-  accountA,
-  "モザイク受信禁止確認用トランザクション",
+  accountA
 )
+
+console.log("===モザイク受信禁止確認用トランザクション===")
+await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")
 
 // 特定のトランザクションの送信禁止制限フラグ(restrictedAccount3の転送トランザクションの送信を禁止)
 const accountOperationRestrictionFlagsValue =
@@ -324,8 +328,10 @@ const transferDescriptor3 =
     "\0Hello, Symbol!",
   )
 
-await createAndSendTransaction(
+const hashTf3 = await createAndSendTransaction(
   transferDescriptor3,
-  restrictedAccount3,
-  "トランザクション送信禁止確認用トランザクション",
+  restrictedAccount3
 )
+
+console.log("===トランザクション送信禁止確認用トランザクション===")
+await awaitTransactionStatus(hashTf3.toString(), NODE_URL, "confirmed")

@@ -9,10 +9,8 @@ import {
 import dotenv from "dotenv"
 import { createAndSendTransaction } from "./functions/createAndSendTransaction"
 
-// dotenvの設定
 dotenv.config()
 
-// 事前準備
 const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -33,14 +31,29 @@ const subscribe = (channel: string, callback: Function): void => {
   subscriptions.get(channel)?.push(callback)
 }
 
+// チャンネル設定
+const confirmedChannelName = `confirmedAdded/${accountA.address}`
+const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
+
+subscribe(confirmedChannelName, (tx: any) =>
+  //承認済みトランザクションを検知した時の処理
+  console.log("承認済みトランザクション:", tx),
+)
+subscribe(unconfirmedChannelName, (tx: any) =>
+  //未承認済みトランザクションを検知した時の処理
+  console.log("未承認トランザクション:", tx),
+)
+
 // WebSocket接続の管理
 const initializeWebSocket = () => {
   const ws = new WebSocket(wsEndpoint)
 
+  // WebSocketに接続した時の処理
   ws.addEventListener("open", () => {
     console.log("WebSocket接続確立")
   })
 
+  // WebSocketでメッセージを検知した時の処理
   ws.addEventListener("message", (event: MessageEvent) => {
     try {
       const message = JSON.parse(event.data)
@@ -49,20 +62,9 @@ const initializeWebSocket = () => {
       if (message.uid) {
         uid = message.uid
         console.log("接続ID:", uid)
-
         // チャンネル購読
-        const channels = [
-          confirmedChannelName,
-          unconfirmedChannelName,
-        ]
-        channels.forEach((channel) => {
-          ws.send(
-            JSON.stringify({
-              uid,
-              subscribe: channel,
-            }),
-          )
-        })
+        ws.send(JSON.stringify({ uid, subscribe: confirmedChannelName }));
+        ws.send(JSON.stringify({ uid, subscribe: unconfirmedChannelName }));
         return
       }
 
@@ -80,10 +82,12 @@ const initializeWebSocket = () => {
     }
   })
 
+  // WebSocketでエラーを検知した時の処理
   ws.addEventListener("error", (event) => {
     console.error("WebSocketエラー:", event)
   })
 
+  // WebSocketが閉じた時の処理
   ws.addEventListener("close", () => {
     console.log("WebSocket接続終了")
     uid = ""
@@ -93,24 +97,13 @@ const initializeWebSocket = () => {
   return ws
 }
 
-// チャンネル設定
-const confirmedChannelName = `confirmedAdded/${accountA.address}`
-const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
-
-subscribe(confirmedChannelName, (tx: any) =>
-  console.log("承認済みトランザクション:", tx),
-)
-subscribe(unconfirmedChannelName, (tx: any) =>
-  console.log("未承認トランザクション:", tx),
-)
-
 // WebSocket開始
 initializeWebSocket()
 
 // 接続が確立するまで1秒待つ
 await new Promise((resolve) => setTimeout(resolve, 1000))
 
-// 監視確認用トランザクション
+// 監視で検知させるための転送トランザクション
 const transferDescriptor =
   new descriptors.TransferTransactionV1Descriptor(
     accountB.address,

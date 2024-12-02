@@ -79,7 +79,7 @@ const jsonPayloadAgg =
 
 const payloadAgg = JSON.parse(jsonPayloadAgg).payload
 
-// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
 // メール等何かの方法（オフライン）でpayloadAggを送る
 
 // ペイロードからTxの復元

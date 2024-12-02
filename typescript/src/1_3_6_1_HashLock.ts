@@ -1,6 +1,7 @@
 // アグリゲートボンデッドトランザクションをハッシュロックし、オンチェーン上で連署を行う
-import { PrivateKey } from "symbol-sdk"
+import { PrivateKey, utils } from "symbol-sdk"
 import {
+  KeyPair,
   Network,
   SymbolFacade,
   descriptors,
@@ -127,23 +128,24 @@ console.log({ responseAgg })
 console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
-// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
-// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）からトランザクションを参照
-// TODO 実際は ハッシュ値からTxInfoを取得してそこからtxAggを再生成する必要あり
-// もしくは自分宛の署名要求を何かの方法で検知できるか（監視あたりでチェック）
+// （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
+// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）から連署を行う
+
+const hashAggString = hashAgg.toString()
+const hashAggRestore = new models.Hash256(utils.hexToUint8(hashAggString))
 
 // 連署者による署名
-const cosignature = accountB.cosignTransaction(txAgg, true)
+const cosignB = accountB.keyPair.sign(hashAggRestore.bytes)
 
 const cosignatureRequest = {
   //連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
-  parentHash: facade.hashTransaction(txAgg).toString(), 
+  parentHash: hashAggString, 
   //署名部分 
-  signature: cosignature.signature.toString(),
+  signature: cosignB.toString(),
   //連署者の公開鍵 
-  signerPublicKey: cosignature.signerPublicKey.toString(),
+  signerPublicKey: accountB.publicKey.toString(),
   //署名したトランザクションのバージョン
-  version: cosignature.version.toString(),
+  version: "0",
 }
 
 const responseCos = await fetch(
@@ -160,7 +162,7 @@ console.log({ responseCos })
 
 console.log("===アグリゲートボンデッドトランザクションへの連署===")
 await awaitTransactionStatus(
-  hashAgg.toString(),
+  hashAggString,
   NODE_URL,
   "confirmed",
 )

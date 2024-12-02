@@ -60,7 +60,7 @@ const hashLock = await createAndSendTransaction(
 console.log("===シークレットロックトランザクション===")
 await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
 
-// （実際はこれ以降は別のコード上で実装するものですが、便宜上同じコード上にあります）
+// （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
 // ロックしているシークレット（オンチェーン上でも確認可能）を参照
 // メール等何かの方法でプルーフを確認
 

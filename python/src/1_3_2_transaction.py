@@ -7,6 +7,7 @@ import requests
 from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade,SymbolAccount,Hash256
+from symbolchain.sc import Signature, TransferTransactionV1
 from typing import Any, Dict
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,7 +33,7 @@ def main() -> None:
     deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
 
     # トランザクションの生成
-    tx = facade.transaction_factory.create({
+    tx: TransferTransactionV1 = facade.transaction_factory.create({
         'type': 'transfer_transaction_v1', # 転送トランザクション
         'recipient_address': account_b.address, # 送信先アカウントのアドレス
         'mosaics': [{
@@ -46,7 +47,7 @@ def main() -> None:
         'deadline': deadline_timestamp
     })
     
-    signature = account_a.sign_transaction(tx) # 署名
+    signature: Signature = account_a.sign_transaction(tx) # 署名
     
     # ペイロードを生成しJson形式 => 文字列に整形したもの
     json_payload: str = facade.transaction_factory.attach_signature(

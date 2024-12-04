@@ -18,8 +18,7 @@ async def await_transaction_status(
         ).json()        
         # 指定したトランザクションステータスになっていたら結果を表示させる
         if status['group'] == transaction_status:
-            print("結果:", status['code'])
-            print("エクスプローラー:", f"https://testnet.symbol.fyi/transactions/{hash}")
+            print(f"結果: {status['code']} エクスプローラー: https://testnet.symbol.fyi/transactions/{hash}")
             return
         elif status['group'] == 'failed':
             print("結果 エラー:", status['code'])

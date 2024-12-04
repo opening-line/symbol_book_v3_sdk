@@ -7,7 +7,7 @@ import requests
 from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade,SymbolAccount,Hash256
-from symbolchain.sc import Signature, TransferTransactionV1
+from symbolchain.sc import Amount, Signature, TransferTransactionV1
 from typing import Any, Dict
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,9 +43,10 @@ def main() -> None:
         }],
         'message': b'\0Hello, AccountB!',
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
-        'fee': 1000000,  # 手数料 TODO 手数料乗数で指定する方法があればそちらにする
         'deadline': deadline_timestamp
     })
+    # トランザクション手数料の計算と設定
+    tx.fee = Amount(100 * tx.size) # 手数料乗数、100は最大値
     
     signature: Signature = account_a.sign_transaction(tx) # 署名
     

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
 from symbolchain.symbol.IdGenerator import generate_namespace_id
-from symbolchain.sc import NamespaceId, AliasAction, Signature, NamespaceRegistrationTransactionV1, AddressAliasTransactionV1, AggregateCompleteTransactionV2
+from symbolchain.sc import Amount, AliasAction, Signature, NamespaceRegistrationTransactionV1, AddressAliasTransactionV1, AggregateCompleteTransactionV2
 from typing import Any, Dict
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from functions.convert_hex_values_in_object import convert_hex_values_in_object
@@ -82,9 +82,9 @@ async def main() -> None:
         'transactions': txs, # インナートランザクションを指定
         'transactions_hash': inner_transaction_hash, # インナートランザクションのハッシュを指定
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
-        'fee': 1000000, # 手数料はアグリゲートトランザクション側で指定する
         'deadline': deadline_timestamp # 有効期限はアグリゲートトランザクション側で指定する
     })
+    agg_tx.fee = Amount(100 * agg_tx.size)
 
     agg_signature: Signature = account_a.sign_transaction(agg_tx)
     

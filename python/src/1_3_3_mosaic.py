@@ -3,7 +3,6 @@
 import os
 import sys
 import json
-import time
 import random
 import requests
 import asyncio
@@ -82,11 +81,7 @@ async def main() -> None:
     # アグリゲートトランザクションを生成
     agg_tx: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
         'type': 'aggregate_complete_transaction_v2', # トランザクションタイプの指定
-        'transactions': [ # インナートランザクションを指定
-            mosaic_definition_tx,
-            mosaic_supply_change_tx,
-            transfer_tx
-        ],
+        'transactions': txs, # インナートランザクションを指定
         'transactions_hash': inner_transaction_hash, # インナートランザクションのハッシュを指定
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
         'fee': 1000000, # 手数料はアグリゲートトランザクション側で指定する

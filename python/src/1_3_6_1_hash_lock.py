@@ -155,4 +155,4 @@ async def main() -> None:
 
     
 if __name__ == "__main__":
-    asyncio.run(main())  # asyncio.runを使用して非同期関数を実行
+    asyncio.run(main())

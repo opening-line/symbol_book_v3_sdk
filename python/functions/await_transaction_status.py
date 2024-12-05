@@ -12,7 +12,7 @@ async def await_transaction_status(
     for _ in range(100):
         time.sleep(1)        
         # トランザクションハッシュからステータスを確認
-        status: Dict[str, Any] = requests.get(
+        status = requests.get(
             f"{node_url}/transactionStatus/{hash}",
             headers={"Content-Type": "application/json"}
         ).json()  

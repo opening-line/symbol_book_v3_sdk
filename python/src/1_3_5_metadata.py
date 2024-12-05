@@ -23,7 +23,7 @@ async def main() -> None:
     private_key_a: str = os.getenv('PRIVATE_KEY_A') or ""
     account_a: SymbolAccount = facade.create_account(PrivateKey(private_key_a))
 
-    network_time: Dict[str, Any] = requests.get(f"{NODE_URL}/node/time").json()
+    network_time = requests.get(f"{NODE_URL}/node/time").json()
     current_timestamp: int = int(network_time['communicationTimestamps']['receiveTimestamp'])
     deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
 

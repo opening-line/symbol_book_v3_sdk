@@ -27,12 +27,12 @@ async def main() -> None:
     private_key_b: str = os.getenv('PRIVATE_KEY_B') or ""
     account_b: SymbolAccount = facade.create_account(PrivateKey(private_key_b))
 
-    network_time: Dict[str, Any] = requests.get(f"{NODE_URL}/node/time").json()
+    network_time = requests.get(f"{NODE_URL}/node/time").json()
     current_timestamp: int = int(network_time['communicationTimestamps']['receiveTimestamp'])
     deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
 
     # モザイク定義用のフラグ値
-    mosaic_flags: MosaicFlags = MosaicFlags.TRANSFERABLE  # 第三者に転送可能
+    mosaic_flags_value: MosaicFlags = MosaicFlags.TRANSFERABLE  # 第三者に転送可能
     # モザイクID生成時のノンスの生成
     nonce: int = random.randint(0, 0xffffffff)
     # モザイクIDの生成
@@ -44,7 +44,7 @@ async def main() -> None:
         'id': mosaic_id, # モザイクID
         'duration': 0,  # 有効期限
         'nonce': MosaicNonce(nonce), # ナンス
-        'flags': mosaic_flags, # モザイク定義用のフラグ
+        'flags': mosaic_flags_value, # モザイク定義用のフラグ
         'divisibility': 0,  # 可分性 小数点以下の桁数
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
     })

@@ -28,7 +28,7 @@ def main() -> None:
     account_b: SymbolAccount = facade.create_account(PrivateKey(private_key_b))
 
     # ネットワークの現在時刻を取得
-    network_time: Dict[str, Any] = requests.get(f"{NODE_URL}/node/time").json()
+    network_time = requests.get(f"{NODE_URL}/node/time").json()
     current_timestamp: int = int(network_time['communicationTimestamps']['receiveTimestamp'])
     deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
 
@@ -75,13 +75,14 @@ def main() -> None:
     for _ in range(100):
         time.sleep(1)
         # トランザクションの状態を確認
-        status: Dict[str, Any] = requests.get(
+        status = requests.get(
             f"{NODE_URL}/transactionStatus/{str(hash)}",
             headers={"Content-Type": "application/json"}
         ).json()
-
         # トランザクションの状態がconfirmedになっていたら結果を表示させる
-        if status['group'] == 'confirmed':
+        if status['code'] == 'ResourceNotFound':
+            continue
+        elif status['group'] == 'confirmed':
             print(status)
             print("結果:", status['code'])
             print("エクスプローラー:", f"https://testnet.symbol.fyi/transactions/{str(hash)}")
@@ -93,7 +94,7 @@ def main() -> None:
         raise Exception("トランザクションが確認されませんでした。")
 
     # トランザクション情報を取得する
-    tx_info: Dict[str, Any] = requests.get(
+    tx_info = requests.get(
         f"{NODE_URL}/transactions/confirmed/{str(hash)}",
         headers={"Content-Type": "application/json"}
     ).json()

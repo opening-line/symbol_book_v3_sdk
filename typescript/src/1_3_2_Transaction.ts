@@ -79,7 +79,9 @@ await new Promise(async (resolve, reject) => {
       }
     ).then((res) => res.json())
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
-    if (status.group === "confirmed") {
+    if (status.code === 'ResourceNotFound') {
+      continue;
+    } else if (status.group === "confirmed") {
       console.log(status)
       console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
       resolve({})

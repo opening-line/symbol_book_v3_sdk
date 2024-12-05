@@ -3,16 +3,8 @@ from symbolchain.sc import UnresolvedAddress
 from binascii import unhexlify
 from typing import Any, Dict, List, Union
 
+# オブジェクト内のアドレス、メッセージ、メタデータの値を16進数文字列から元の値に変換する
 def convert_hex_values_in_object(obj: Union[Dict[str, Any], List[Any], Any]) -> Union[Dict[str, Any], List[Any], Any]:
-    """
-    オブジェクト内のアドレス、メッセージ、メタデータを16進数文字列から元の値に変換する
-
-    Args:
-        obj: 変換対象のオブジェクト（dict, list, または基本型）
-
-    Returns:
-        変換後のオブジェクト
-    """
     facade = SymbolFacade('testnet')
 
     if isinstance(obj, dict):

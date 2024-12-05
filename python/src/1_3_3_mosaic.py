@@ -79,37 +79,37 @@ async def main() -> None:
     inner_transaction_hash: Hash256 = facade.hash_embedded_transactions(txs)
 
     # アグリゲートトランザクションを生成
-    agg_tx: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
+    tx_agg: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
         'type': 'aggregate_complete_transaction_v2', # トランザクションタイプの指定
         'transactions': txs, # インナートランザクションを指定
         'transactions_hash': inner_transaction_hash, # インナートランザクションのハッシュを指定
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
         'deadline': deadline_timestamp # 有効期限はアグリゲートトランザクション側で指定する
     })
-    agg_tx.fee = Amount(100 * agg_tx.size)
+    tx_agg.fee = Amount(100 * tx_agg.size)
 
-    agg_signature: Signature = account_a.sign_transaction(agg_tx)
+    signature_agg: Signature = account_a.sign_transaction(tx_agg)
     
     # ペイロードの生成
-    agg_json_payload = facade.transaction_factory.attach_signature(agg_tx, agg_signature)
+    json_payload_agg = facade.transaction_factory.attach_signature(tx_agg, signature_agg)
 
     # ノードにアナウンスを行う
-    agg_response = requests.put(
+    response_agg = requests.put(
         f"{NODE_URL}/transactions",
         headers={"Content-Type": "application/json"},
-        data=agg_json_payload
+        data=json_payload_agg
     ).json()
 
-    print("Response:", agg_response)
+    print("Response:", response_agg)
 
     # トランザクションハッシュの生成
-    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
+    hash_agg: Hash256 = facade.hash_transaction(tx_agg)
     
     print("===モザイク発行及び転送トランザクション===")
 
     # トランザクションの状態を確認する処理を関数化
     await await_transaction_status(
-        str(agg_hash),
+        str(hash_agg),
         NODE_URL,
         "confirmed"
     )

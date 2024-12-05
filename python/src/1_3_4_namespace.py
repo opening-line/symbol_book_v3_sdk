@@ -73,33 +73,33 @@ async def main() -> None:
 
     inner_transaction_hash: Hash256 = facade.hash_embedded_transactions(txs)
 
-    agg_tx: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
+    tx_agg: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
         'type': 'aggregate_complete_transaction_v2',
         'transactions': txs,
         'transactions_hash': inner_transaction_hash,
         'signer_public_key': account_a.public_key,
         'deadline': deadline_timestamp
     })
-    agg_tx.fee = Amount(100 * agg_tx.size)
+    tx_agg.fee = Amount(100 * tx_agg.size)
 
-    agg_signature: Signature = account_a.sign_transaction(agg_tx)
+    signature_agg: Signature = account_a.sign_transaction(tx_agg)
     
-    agg_json_payload = facade.transaction_factory.attach_signature(agg_tx, agg_signature)
+    json_payload_agg = facade.transaction_factory.attach_signature(tx_agg, signature_agg)
 
-    agg_response = requests.put(
+    response_agg = requests.put(
         f"{NODE_URL}/transactions",
         headers={"Content-Type": "application/json"},
-        data=agg_json_payload
+        data=json_payload_agg
     ).json()
 
-    print("Response:", agg_response)
+    print("Response:", response_agg)
 
-    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
+    hash_agg: Hash256 = facade.hash_transaction(tx_agg)
     
     print("===ネームスペース登録及びリンクトランザクション===")
     # トランザクションの状態を確認する処理を関数化
     await await_transaction_status(
-        str(agg_hash),
+        str(hash_agg),
         NODE_URL,
         "confirmed"
     )

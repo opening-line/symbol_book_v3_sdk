@@ -59,20 +59,20 @@ async def main() -> None:
     inner_transaction_hash: Hash256 = facade.hash_embedded_transactions(txs)
 
     # アグリゲート本デッドトランザクションを生成
-    agg_tx: AggregateBondedTransactionV2 = facade.transaction_factory.create({
+    tx_agg: AggregateBondedTransactionV2 = facade.transaction_factory.create({
         'type': 'aggregate_bonded_transaction_v2', # トランザクションタイプの指定
         'transactions': txs,
         'transactions_hash': inner_transaction_hash,
         'signer_public_key': account_a.public_key,
         'deadline': deadline_timestamp
     })
-    agg_tx.fee = Amount(100 * agg_tx.size + 1*104) # 連署者分の手数料 ＊ 104を追加
+    tx_agg.fee = Amount(100 * tx_agg.size + 1*104) # 連署者分の手数料 ＊ 104を追加
 
-    agg_signature: Signature = account_a.sign_transaction(agg_tx)    
-    agg_json_payload = facade.transaction_factory.attach_signature(agg_tx, agg_signature)
+    signature_agg: Signature = account_a.sign_transaction(tx_agg)    
+    json_payload_agg = facade.transaction_factory.attach_signature(tx_agg, signature_agg)
 
     # ハッシュロックに必要なトランザクションハッシュの生成
-    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
+    hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
     # ハッシュロックトランザクションの生成
     hashlock_tx: HashLockTransactionV1 = facade.transaction_factory.create({
@@ -82,7 +82,7 @@ async def main() -> None:
             'amount': 10000000  # ロック用に固定で10xymを預ける
         },
         'duration': 5760, # ロック期間（ブロック数）
-        'hash': agg_hash, # ロックしたいトランザクションのハッシュ
+        'hash': hash_agg, # ロックしたいトランザクションのハッシュ
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
         'deadline': deadline_timestamp
     })
@@ -101,19 +101,19 @@ async def main() -> None:
     await asyncio.sleep(1)
 
     # アグリゲートボンデッドトランザクションのアナウンス
-    agg_response = requests.put(
+    response_agg = requests.put(
         # エンドポイントがに/transactions/partialであることに注意
         f"{NODE_URL}/transactions/partial",
         headers={"Content-Type": "application/json"},
-        data=agg_json_payload
+        data=json_payload_agg
     ).json()
 
-    print("Response:", agg_response)
+    print("Response:", response_agg)
 
     # partial（オンチェーン上で連署待ちの状態）の確認
     print("===アグリゲートボンデッドトランザクション===")
     await await_transaction_status(
-        str(agg_hash),
+        str(hash_agg),
         NODE_URL,
         "partial"
     )
@@ -121,15 +121,15 @@ async def main() -> None:
     # （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
     # ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）から連署を行う
 
-    agg_hash_string = str(agg_hash)
-    agg_hash_restore: Hash256 = Hash256(agg_hash_string)
+    hash_agg_string = str(hash_agg)
+    hash_agg_restore: Hash256 = Hash256(hash_agg_string)
 
     # 連署者による署名
-    cosignB = account_b.key_pair.sign(agg_hash_restore.bytes)
+    cosignB = account_b.key_pair.sign(hash_agg_restore.bytes)
 
     cosignature_request = json.dumps({
         # 連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
-        'parentHash': agg_hash_string,
+        'parentHash': hash_agg_string,
         # 署名部分
         'signature': str(cosignB),
         # 連署者の公開鍵
@@ -149,7 +149,7 @@ async def main() -> None:
 
     print("===アグリゲートボンデッドトランザクションへの連署===")
     await await_transaction_status(
-        agg_hash_string,
+        hash_agg_string,
         NODE_URL,
         "confirmed",
     )

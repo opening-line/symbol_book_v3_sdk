@@ -15,9 +15,11 @@ async def await_transaction_status(
         status: Dict[str, Any] = requests.get(
             f"{node_url}/transactionStatus/{hash}",
             headers={"Content-Type": "application/json"}
-        ).json()        
-        # 指定したトランザクションステータスになっていたら結果を表示させる
-        if status['group'] == transaction_status:
+        ).json()  
+        # 指定したトランザクションステータスになっていたら結果を表示させる        
+        if status['code'] == 'ResourceNotFound':
+            continue
+        elif status['group'] == transaction_status:
             print(f"結果: {status['code']} エクスプローラー: https://testnet.symbol.fyi/transactions/{hash}")
             return
         elif status['group'] == 'failed':

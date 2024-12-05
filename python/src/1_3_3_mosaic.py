@@ -84,7 +84,6 @@ async def main() -> None:
         'transactions': txs, # インナートランザクションを指定
         'transactions_hash': inner_transaction_hash, # インナートランザクションのハッシュを指定
         'signer_public_key': account_a.public_key, # 署名者の公開鍵
-        'fee': 1000000, # 手数料はアグリゲートトランザクション側で指定する
         'deadline': deadline_timestamp # 有効期限はアグリゲートトランザクション側で指定する
     })
     agg_tx.fee = Amount(100 * agg_tx.size)
@@ -104,13 +103,13 @@ async def main() -> None:
     print("Response:", agg_response)
 
     # トランザクションハッシュの生成
-    hash: Hash256 = facade.hash_transaction(agg_tx)
+    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
     
     print("===モザイク発行及び転送トランザクション===")
 
     # トランザクションの状態を確認する処理を関数化
     await await_transaction_status(
-        str(hash),
+        str(agg_hash),
         NODE_URL,
         "confirmed"
     )

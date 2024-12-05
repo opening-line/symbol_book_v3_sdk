@@ -94,12 +94,12 @@ async def main() -> None:
 
     print("Response:", agg_response)
 
-    hash: Hash256 = facade.hash_transaction(agg_tx)
+    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
     
     print("===ネームスペース登録及びリンクトランザクション===")
     # トランザクションの状態を確認する処理を関数化
     await await_transaction_status(
-        str(hash),
+        str(agg_hash),
         NODE_URL,
         "confirmed"
     )

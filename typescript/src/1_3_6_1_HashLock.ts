@@ -148,7 +148,7 @@ const cosignatureRequest = {
 }
 
 const responseCos = await fetch(
-  // エンドポイントがに/transactions/cosignatureであることに注意  
+  // エンドポイントが/transactions/cosignatureであることに注意  
   new URL("/transactions/cosignature", NODE_URL),
   {
     method: "PUT",

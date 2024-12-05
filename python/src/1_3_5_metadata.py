@@ -52,7 +52,7 @@ async def main() -> None:
 
     txs = [metadata_tx]
 
-    inner_transaction_hash = facade.hash_embedded_transactions(txs)
+    inner_transaction_hash: Hash256 = facade.hash_embedded_transactions(txs)
 
     agg_tx: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
         'type': 'aggregate_complete_transaction_v2',
@@ -75,11 +75,11 @@ async def main() -> None:
 
     print("Response:", agg_response)
 
-    hash: Hash256 = facade.hash_transaction(agg_tx)
+    agg_hash: Hash256 = facade.hash_transaction(agg_tx)
 
     print("===アカウントメタデータトランザクション===")
     await await_transaction_status(
-        str(hash),
+        str(agg_hash),
         NODE_URL,
         "confirmed"
     )

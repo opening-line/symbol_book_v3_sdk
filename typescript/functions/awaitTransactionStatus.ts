@@ -17,7 +17,9 @@ export async function awaitTransactionStatus(
         }        
       ).then((res) => res.json())
       //指定したトランザクションステータスになっていたら結果を表示させる
-      if (status.group === transactionStatus) {
+      if (status.code === 'ResourceNotFound') {
+        continue;
+      } else if (status.group === transactionStatus) {
         console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
         resolve({})
         return

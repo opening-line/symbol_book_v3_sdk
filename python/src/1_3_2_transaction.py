@@ -51,13 +51,13 @@ def main() -> None:
     signature: Signature = account_a.sign_transaction(tx) # 署名
     
     # ペイロードを生成しJson形式 => 文字列に整形したもの
-    json_payload: str = facade.transaction_factory.attach_signature(
+    json_payload = facade.transaction_factory.attach_signature(
         tx, # トランザクションを指定
         signature # 署名を指定
     )
 
     # ノードにアナウンスを行う
-    response: Dict[str, Any] = requests.put( # 書き込み時はPUTを指定する
+    response = requests.put( # 書き込み時はPUTを指定する
         f"{NODE_URL}/transactions",
         headers={"Content-Type": "application/json"},
         data=json_payload  #整形されたペイロードを指定
@@ -102,8 +102,8 @@ def main() -> None:
     print(json.dumps(tx_info, indent=2))
 
     # アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
-    # アドレス：Address.fromDecodedAddressHexString(value).toString()
-    # メッセージ：new TextDecoder().decode(utils.hexToUint8(value))
+    # アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
+    # メッセージはバイトに変換し、UTF-8形式でデコード。
     # 16進数のアドレスとメッセージを変換する処理を関数化
     print(json.dumps(convert_hex_values_in_object(tx_info), indent=2))
 

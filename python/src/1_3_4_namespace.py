@@ -1,9 +1,7 @@
-
 # ネームスペースを登録しアカウントに紐づけるコード
 import os
 import sys
 import json
-import random
 import requests
 import asyncio
 from dotenv import load_dotenv
@@ -31,7 +29,7 @@ async def main() -> None:
 
     # ルートネームスペース名の指定
     # ブロックチェーン内でユニークである必要があるので、ランダムな英数字文字列を追加する
-    root_namespace: str = "namespace_" + ''.join(random.sample('abcdefghijklmnopqrstuvwxyz0123456789', 5))
+    root_namespace: str = "namespace_" + os.urandom(5).hex()
     # ネームスペースIDの生成
     root_namespace_id: int = generate_namespace_id(root_namespace, 0)
 
@@ -73,25 +71,21 @@ async def main() -> None:
         address_alias_tx,
     ]
 
-    # インナー（アグリゲートに内包する）トランザクションのハッシュを生成
     inner_transaction_hash: Hash256 = facade.hash_embedded_transactions(txs)
 
-    # アグリゲートトランザクションを生成
     agg_tx: AggregateCompleteTransactionV2 = facade.transaction_factory.create({
-        'type': 'aggregate_complete_transaction_v2', # トランザクションタイプの指定
-        'transactions': txs, # インナートランザクションを指定
-        'transactions_hash': inner_transaction_hash, # インナートランザクションのハッシュを指定
-        'signer_public_key': account_a.public_key, # 署名者の公開鍵
-        'deadline': deadline_timestamp # 有効期限はアグリゲートトランザクション側で指定する
+        'type': 'aggregate_complete_transaction_v2',
+        'transactions': txs,
+        'transactions_hash': inner_transaction_hash,
+        'signer_public_key': account_a.public_key,
+        'deadline': deadline_timestamp
     })
     agg_tx.fee = Amount(100 * agg_tx.size)
 
     agg_signature: Signature = account_a.sign_transaction(agg_tx)
     
-    # ペイロードの生成
     agg_json_payload = facade.transaction_factory.attach_signature(agg_tx, agg_signature)
 
-    # ノードにアナウンスを行う
     agg_response = requests.put(
         f"{NODE_URL}/transactions",
         headers={"Content-Type": "application/json"},
@@ -100,11 +94,9 @@ async def main() -> None:
 
     print("Response:", agg_response)
 
-    # トランザクションハッシュの生成
     hash: Hash256 = facade.hash_transaction(agg_tx)
     
     print("===ネームスペース登録及びリンクトランザクション===")
-
     # トランザクションの状態を確認する処理を関数化
     await await_transaction_status(
         str(hash),

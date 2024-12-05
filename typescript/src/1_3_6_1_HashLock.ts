@@ -1,7 +1,6 @@
 // アグリゲートボンデッドトランザクションをハッシュロックし、オンチェーン上で連署を行う
 import { PrivateKey, utils } from "symbol-sdk"
 import {
-  KeyPair,
   Network,
   SymbolFacade,
   descriptors,

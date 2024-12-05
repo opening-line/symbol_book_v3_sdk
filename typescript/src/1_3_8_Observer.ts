@@ -4,7 +4,6 @@ import {
   Network,
   SymbolFacade,
   descriptors,
-  models,
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"

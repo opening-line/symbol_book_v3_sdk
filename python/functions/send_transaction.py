@@ -1,6 +1,6 @@
 import requests
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
-from typing import Any, Dict
+from typing import Any
 from symbolchain.sc import Amount, Signature
 
 # トランザクションを受け取り、署名し、トランザクションハッシュを返す関数

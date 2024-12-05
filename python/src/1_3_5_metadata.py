@@ -9,7 +9,6 @@ from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
 from symbolchain.symbol.Metadata import metadata_generate_key, metadata_update_value
 from symbolchain.sc import Amount, Signature, AccountMetadataTransactionV1, AggregateCompleteTransactionV2
-from typing import Any, Dict
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from functions.convert_hex_values_in_object import convert_hex_values_in_object
 from functions.await_transaction_status import await_transaction_status

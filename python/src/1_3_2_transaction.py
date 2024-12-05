@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade,SymbolAccount,Hash256
 from symbolchain.sc import Amount, Signature, TransferTransactionV1
-from typing import Any, Dict
 # プロジェクトのルートディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from functions.convert_hex_values_in_object import convert_hex_values_in_object

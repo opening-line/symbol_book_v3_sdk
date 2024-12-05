@@ -1,6 +1,6 @@
 import time
 import requests
-from typing import Literal, Dict, Any
+from typing import Literal
 
 # トランザクションハッシュを指定してトランザクションの状態を確認する関数
 async def await_transaction_status(

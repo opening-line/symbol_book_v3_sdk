@@ -29,45 +29,45 @@ async def main() -> None:
 
     # ルートネームスペース名の指定
     # ブロックチェーン内でユニークである必要があるので、ランダムな英数字文字列を追加する
-    root_namespace: str = "namespace_" + os.urandom(5).hex()
+    root_name_space: str = "namespace_" + os.urandom(5).hex()
     # ネームスペースIDの生成
-    root_namespace_id: int = generate_namespace_id(root_namespace, 0)
+    root_name_space_id: int = generate_namespace_id(root_name_space, 0)
 
     # ネームスペース登録トランザクション
-    namespace_registration_tx: NamespaceRegistrationTransactionV1 = facade.transaction_factory.create_embedded({
+    name_space_registration_tx: NamespaceRegistrationTransactionV1 = facade.transaction_factory.create_embedded({
         'type': 'namespace_registration_transaction_v1', # トランザクションタイプの指定
-        'id': root_namespace_id, # ネームスペースID
+        'id': root_name_space_id, # ネームスペースID
         'registration_type': 'root',  # ルートネームスペースとして登録
         'duration': 86400,  # レンタル期間（ブロック数）
         'parent_id': 0, # ルートネームスペースの場合は0
-        'name': root_namespace, # レンタルするネームスペース名
+        'name': root_name_space, # レンタルするネームスペース名
         'signer_public_key': account_a.public_key, # 署名者の公開鍵        
     })
 
-    sub_namespace = "tarou"  # サブネームスペース名の指定
-    sub_namespace_id = generate_namespace_id(sub_namespace, root_namespace_id)  # サブネームスペースIDの生成
+    sub_name_space = "tarou"  # サブネームスペース名の指定
+    sub_name_space_id = generate_namespace_id(sub_name_space, root_name_space_id)  # サブネームスペースIDの生成
 
-    sub_namespace_registration_tx: NamespaceRegistrationTransactionV1 = facade.transaction_factory.create_embedded({
+    sub_name_space_registration_tx: NamespaceRegistrationTransactionV1 = facade.transaction_factory.create_embedded({
         'type': 'namespace_registration_transaction_v1',  # トランザクションタイプの指定
-        'id': sub_namespace_id,  # サブネームスペースID
+        'id': sub_name_space_id,  # サブネームスペースID
         'registration_type': 'child',  # サブネームスペースとして登録
         'duration': 86400,  # レンタル期間（ブロック数）
-        'parent_id': root_namespace_id,  # 親に当たるネームスペースIDを指定
-        'name': sub_namespace,  # レンタルするサブネームスペース名
+        'parent_id': root_name_space_id,  # 親に当たるネームスペースIDを指定
+        'name': sub_name_space,  # レンタルするサブネームスペース名
         'signer_public_key': account_a.public_key, # 署名者の公開鍵        
     })
 
     address_alias_tx: AddressAliasTransactionV1 = facade.transaction_factory.create_embedded({
         'type': 'address_alias_transaction_v1',  # ネームスペースをアドレスにリンクするトランザクション
-        'namespace_id': root_namespace_id,  # リンクするネームスペースID
+        'namespace_id': root_name_space_id,  # リンクするネームスペースID
         'address': account_a.address,  # リンクするアカウントのアドレス
         'alias_action': AliasAction.LINK, # リンクする（LINK）、リンクを外す（UNLINK）
         'signer_public_key': account_a.public_key, # 署名者の公開鍵        
     })
 
     txs = [
-        namespace_registration_tx,
-        sub_namespace_registration_tx,
+        name_space_registration_tx,
+        sub_name_space_registration_tx,
         address_alias_tx,
     ]
 
@@ -105,13 +105,13 @@ async def main() -> None:
     )
 
     # ネームスペース情報を取得する（サブネームスペースの情報）
-    namespace_id_hex = hex(sub_namespace_id)[2:]  # '0x'を除去
-    namespace_info = requests.get(
-        f"{NODE_URL}/namespaces/{namespace_id_hex}",
+    name_space_id_hex = hex(sub_name_space_id)[2:]  # '0x'を除去
+    name_space_info = requests.get(
+        f"{NODE_URL}/namespaces/{name_space_id_hex}",
         headers={"Content-Type": "application/json"}
     ).json()
 
-    print(json.dumps(convert_hex_values_in_object(namespace_info), indent=2))
+    print(json.dumps(convert_hex_values_in_object(name_space_info), indent=2))
 
 if __name__ == "__main__":
     asyncio.run(main())

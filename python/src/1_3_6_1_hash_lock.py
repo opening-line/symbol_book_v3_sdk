@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
 from symbolchain.sc import Amount, Signature, TransferTransactionV1, AggregateBondedTransactionV2, HashLockTransactionV1
-from typing import Any, Dict
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from functions.send_transaction import send_transaction
 from functions.await_transaction_status import await_transaction_status
@@ -75,7 +74,7 @@ async def main() -> None:
     hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
     # ハッシュロックトランザクションの生成
-    hashlock_tx: HashLockTransactionV1 = facade.transaction_factory.create({
+    hash_lock_tx: HashLockTransactionV1 = facade.transaction_factory.create({
         'type': 'hash_lock_transaction_v1', # トランザクションタイプの指定
         'mosaic': {
             'mosaic_id': 0x72C0212E67A08BCE,
@@ -88,11 +87,11 @@ async def main() -> None:
     })
 
     # アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化 
-    hashlock_hash: Hash256 = send_transaction(hashlock_tx, account_a)
+    hash_lock_hash: Hash256 = send_transaction(hash_lock_tx, account_a)
 
     print("===ハッシュロックトランザクション===")
     await await_transaction_status(
-        str(hashlock_hash),
+        str(hash_lock_hash),
         NODE_URL,
         "confirmed"
     )

@@ -5,7 +5,6 @@ import requests
 import asyncio
 import hashlib
 from dotenv import load_dotenv
-from binascii import unhexlify
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
 from symbolchain.sc import Amount, SecretLockTransactionV1, SecretProofTransactionV1

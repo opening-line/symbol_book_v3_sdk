@@ -65,7 +65,7 @@ async def main() -> None:
         'signer_public_key': account_a.public_key,
         'deadline': deadline_timestamp
     })
-    tx_agg.fee = Amount(100 * tx_agg.size + 1*104) # 連署者分の手数料 ＊ 104を追加
+    tx_agg.fee =  Amount(100 * (tx_agg.size + 1*104)) # 連署者の署名分のサイズ （連署者 ＊ 104）を追加
 
     signature_agg: Signature = account_a.sign_transaction(tx_agg)    
     json_payload_agg = facade.transaction_factory.attach_signature(tx_agg, signature_agg)

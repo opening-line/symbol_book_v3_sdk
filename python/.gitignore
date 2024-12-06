@@ -1,5 +1,6 @@
 # deps
 .venv/
 __pycache__/
+logs/
 # env
 .env

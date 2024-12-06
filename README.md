@@ -21,11 +21,47 @@ $ npx tsx [ファイル名]
 ```
 例
 ```
-$ npx tsx 1_3_1_GenerateAccount.ts
+$ npx tsx src/1_3_2_Transaction.ts
 ```
 
 ## その他
-環境変数に必要なアカウントは以下のコマンドで作れます
+環境変数に必要なアカウントは以下のコマンドで作ることができます
 ```
-$ npx tsx 1_3_1_GenerateAccount.ts
+$ npx tsx utils/generateAccount.ts
+```
+
+# python
+pyenv 2.4.19
+python 3.11.10
+
+## 環境構築手順
+仮想環境の構築
+```
+$ python -m venv .venv
+```
+仮想環境に接続
+```
+$ source .venv/bin/activate
+```
+pythonのバージョンを指定
+```
+$ pyenv install 3.11.10
+```
+モジュールのインストール
+```
+$ pip install -r requirements.txt
+```
+環境変数の設定
+```
+$ cp .env.sample .env
+```
+秘密鍵はtypescript側で生成したものと同じでも問題ない
+
+## 実行方法
+```
+$ python [ファイル名]
+```
+例
+```
+$ python 1_3_2_transaction.py
 ```

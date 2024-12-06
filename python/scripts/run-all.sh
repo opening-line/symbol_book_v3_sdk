@@ -12,9 +12,9 @@ mkdir -p logs
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # 各ファイルを直列処理で実行し、ログを保存
-for file in $(find . -name "1_3_*.ts"); do
+for file in $(find . -name "1_3_*.py"); do
     echo "実行中: $file"
-    npx tsx "$file" > "logs/$(basename "$file")_$TIMESTAMP.log" 2>&1
+    python "$file" > "logs/$(basename "$file")_$TIMESTAMP.log" 2>&1
 done
 
 echo "===== 実行結果 ====="

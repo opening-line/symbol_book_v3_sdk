@@ -7,7 +7,7 @@ import hashlib
 from dotenv import load_dotenv
 from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade, SymbolAccount, Hash256
-from symbolchain.sc import Amount, SecretLockTransactionV1, SecretProofTransactionV1
+from symbolchain.sc import SecretLockTransactionV1, SecretProofTransactionV1
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from functions.send_transaction import send_transaction
 from functions.await_transaction_status import await_transaction_status

@@ -18,3 +18,4 @@ safe-pysha3==1.0.4
 symbol-sdk-python==3.2.2
 typing_extensions==4.12.2
 urllib3==2.2.3
+websockets==14.1

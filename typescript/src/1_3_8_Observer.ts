@@ -4,7 +4,6 @@ import {
   Network,
   SymbolFacade,
   descriptors,
-  models,
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
@@ -56,31 +55,27 @@ const initializeWebSocket = () => {
 
   // WebSocketでメッセージを検知した時の処理
   ws.addEventListener("message", (event: MessageEvent) => {
-    try {
-      const message = JSON.parse(event.data)
+    const message = JSON.parse(event.data)
 
-      // UIDの初期処理
-      if (message.uid) {
-        uid = message.uid
-        console.log("接続ID:", uid)
-        // チャンネル購読
-        ws.send(JSON.stringify({ uid, subscribe: confirmedChannelName }));
-        ws.send(JSON.stringify({ uid, subscribe: unconfirmedChannelName }));
-        return
-      }
-
-      // 購読チャンネルからのメッセージ処理
-      const handlers = subscriptions.get(message.topic)
-      handlers?.forEach((handler) => {
-        handler(message.data)
-        // confirmedAddedを検知したらWebSocketを切る処理
-        if (message.topic === confirmedChannelName) {
-          ws.close()
-        }
-      })
-    } catch (err) {
-      console.error("メッセージ処理エラー:", err)
+    // UIDの初期処理
+    if (message.uid) {
+      uid = message.uid
+      console.log("接続ID:", uid)
+      // チャンネル購読
+      ws.send(JSON.stringify({ uid, subscribe: confirmedChannelName }));
+      ws.send(JSON.stringify({ uid, subscribe: unconfirmedChannelName }));
+      return
     }
+
+    // 購読チャンネルからのメッセージ処理
+    const handlers = subscriptions.get(message.topic)
+    handlers?.forEach((handler) => {
+      handler(message.data)
+      // confirmedAddedを検知したらWebSocketを切る処理
+      if (message.topic === confirmedChannelName) {
+        ws.close()
+      }
+    })
   })
 
   // WebSocketでエラーを検知した時の処理

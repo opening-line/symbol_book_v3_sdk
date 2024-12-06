@@ -20,7 +20,7 @@ const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 
 // メタデータのキーの指定
-// 紐づける対象の中でユニークである必要がある
+// 紐づける対象で同じキーを指定した場合は上書きとなる。今回はユニークなキーを指定する
 const keyText = "key_" + Math.random().toString(36).substring(2, 7)
 // メタデータの値の指定
 const valueText = "test"

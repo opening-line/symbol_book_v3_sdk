@@ -153,33 +153,14 @@ const accountAddressRestrictionDescriptor =
     [
       accountA.address, // 対象アドレスリスト（署名するアカウントではない事に注意）
     ],
-    [], // 解除対象アドレスリスト
+    [], // 解除対象アドレスリスç
   )
 
-const txRr1 = facade.createTransactionFromTypedDescriptor(
+const hashRr1 = await createAndSendTransaction(
   accountAddressRestrictionDescriptor,
-  restrictedAccount1.publicKey, // 署名者の公開鍵
-  100,
-  60 * 60 * 2,
+  restrictedAccount1
 )
-
-const signatureRr1 = restrictedAccount1.signTransaction(txRr1)
-const jsonPayloadRr1 =
-  facade.transactionFactory.static.attachSignature(
-    txRr1,
-    signatureRr1,
-  )
-
-const responseRr1 = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadRr1,
-}).then((res) => res.json())
-
-console.log({ responseRr1 })
-
-const hashRr1 = facade.hashTransaction(txRr1)
-
+  
 console.log("===アカウント受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr1.toString(),
@@ -221,29 +202,10 @@ const accountMosaicRestrictionDescriptor =
     [], // 解除対象モザイクリスト
   )
 
-const txRr2 = facade.createTransactionFromTypedDescriptor(
+const hashRr2 = await createAndSendTransaction(
   accountMosaicRestrictionDescriptor,
-  restrictedAccount2.publicKey, // 署名者の公開鍵
-  100,
-  60 * 60 * 2,
+  restrictedAccount2
 )
-
-const signatureRr2 = restrictedAccount2.signTransaction(txRr2)
-const jsonPayloadRr2 =
-  facade.transactionFactory.static.attachSignature(
-    txRr2,
-    signatureRr2,
-  )
-
-const responseRr2 = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadRr2,
-}).then((res) => res.json())
-
-console.log({ responseRr2 })
-
-const hashRr2 = facade.hashTransaction(txRr2)
 
 console.log("===モザイク受信禁止トランザクション===")
 await awaitTransactionStatus(
@@ -277,7 +239,7 @@ await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")
 // (restrictedAccount3の転送トランザクションの送信を禁止)
 const accountOperationRestrictionFlagsValue =
   new models.AccountRestrictionFlags(
-    models.AccountRestrictionFlags.TRANSACTION_TYPE.value | // 制限対象 モザイク
+    models.AccountRestrictionFlags.TRANSACTION_TYPE.value | // 制限対象 トランザクションタイプ
       models.AccountRestrictionFlags.BLOCK.value | // 制限内容 拒否
       models.AccountRestrictionFlags.OUTGOING.value, // 制限の方向 送信のみ
   )
@@ -292,30 +254,11 @@ const accountOperationRestrictionDescriptor =
     [], // 解除対象のトランザクションタイプリスト
   )
 
-const txRr3 = facade.createTransactionFromTypedDescriptor(
+const hashRr3 = await createAndSendTransaction(
   accountOperationRestrictionDescriptor,
-  restrictedAccount3.publicKey, // 署名者の公開鍵
-  100,
-  60 * 60 * 2,
+  restrictedAccount3
 )
-
-const signatureRr3 = restrictedAccount3.signTransaction(txRr3)
-const jsonPayloadRr3 =
-  facade.transactionFactory.static.attachSignature(
-    txRr3,
-    signatureRr3,
-  )
-
-const responseRr3 = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadRr3,
-}).then((res) => res.json())
-
-console.log({ responseRr3 })
-
-const hashRr3 = facade.hashTransaction(txRr3)
-
+  
 console.log("===トランザクション送信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr3.toString(),

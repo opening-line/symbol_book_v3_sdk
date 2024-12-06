@@ -1,7 +1,7 @@
 import { utils } from "symbol-sdk"
 import { Address } from "symbol-sdk/symbol"
 
-// オブジェクト内のアドレスとメッセージを16進数文字列から元の値に変換する
+// オブジェクト内のアドレス、メッセージ、メタデータの値を16進数文字列から元の値に変換する
 export const convertHexValuesInObject = (obj: Record<string, any>): Record<string, any> => {
     return Object.entries(obj).reduce((acc, [key, value]) => {
       // アドレスの変換

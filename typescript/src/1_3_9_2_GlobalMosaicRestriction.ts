@@ -263,7 +263,7 @@ const hashTf1 = await createAndSendTransaction(
 console.log("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
 await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
 
-// allowedAccount1からallowedAccount3への制限モザイクの送付
+// allowedAccount1からnotAllowedAccount1への制限モザイクの送付
 // 制限がかかりエラーになることを確認する
 const transferDescriptor2 =
   new descriptors.TransferTransactionV1Descriptor(

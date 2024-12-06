@@ -79,7 +79,9 @@ await new Promise(async (resolve, reject) => {
       }
     ).then((res) => res.json())
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
-    if (status.group === "confirmed") {
+    if (status.code === 'ResourceNotFound') {
+      continue;
+    } else if (status.group === "confirmed") {
       console.log(status)
       console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
       resolve({})
@@ -106,8 +108,8 @@ const txInfo = await fetch(
 console.log(JSON.stringify(txInfo, null, 2))
 
 // アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
-// アドレス：Address.fromDecodedAddressHexString(value).toString()
-// メッセージ：new TextDecoder().decode(utils.hexToUint8(value))
+// アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
+// メッセージはバイトに変換し、UTF-8形式でデコード。
 // 16進数のアドレスとメッセージを変換する処理を関数化
 
 console.log(JSON.stringify(convertHexValuesInObject(txInfo), null, 2))

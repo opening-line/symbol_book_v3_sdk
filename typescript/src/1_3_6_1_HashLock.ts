@@ -1,7 +1,6 @@
 // アグリゲートボンデッドトランザクションをハッシュロックし、オンチェーン上で連署を行う
 import { PrivateKey, utils } from "symbol-sdk"
 import {
-  KeyPair,
   Network,
   SymbolFacade,
   descriptors,
@@ -149,7 +148,7 @@ const cosignatureRequest = {
 }
 
 const responseCos = await fetch(
-  // エンドポイントがに/transactions/cosignatureであることに注意  
+  // エンドポイントが/transactions/cosignatureであることに注意  
   new URL("/transactions/cosignature", NODE_URL),
   {
     method: "PUT",

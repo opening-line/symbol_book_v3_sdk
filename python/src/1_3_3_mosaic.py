@@ -27,7 +27,7 @@ async def main() -> None:
 
     network_time = requests.get(f"{NODE_URL}/node/time").json()
     current_timestamp: int = int(network_time['communicationTimestamps']['receiveTimestamp'])
-    deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
+    deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)
 
     # モザイク定義用のフラグ値
     mosaic_flags_value: MosaicFlags = MosaicFlags.TRANSFERABLE  # 第三者に転送可能

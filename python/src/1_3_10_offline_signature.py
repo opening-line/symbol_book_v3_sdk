@@ -26,7 +26,6 @@ async def main() -> None:
     current_timestamp: int = int(network_time['communicationTimestamps']['receiveTimestamp'])
     deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)  # 2時間後（ミリ秒単位）
 
-
     # 転送トランザクション1(accountA=>accountB)
     transfer_tx1: TransferTransactionV1 = facade.transaction_factory.create_embedded({
         'type': 'transfer_transaction_v1', # トランザクションタイプの指定

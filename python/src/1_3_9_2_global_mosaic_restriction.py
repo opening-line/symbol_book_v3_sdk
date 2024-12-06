@@ -1,5 +1,4 @@
-
-# モザイクを生成し送付するコード
+# モザイクに対する制限（グローバルモザイク制限）を設定するコード
 import os
 import sys
 import random

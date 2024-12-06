@@ -1,4 +1,3 @@
-
 # アカウントに対する制限を設定するコード
 import os
 import sys

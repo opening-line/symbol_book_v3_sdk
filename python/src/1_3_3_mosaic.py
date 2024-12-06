@@ -1,4 +1,3 @@
-
 # モザイクを生成し送付するコード
 import os
 import sys

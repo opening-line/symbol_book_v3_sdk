@@ -1,4 +1,4 @@
 python-dotenv==1.0.1
 requests==2.32.3
-symbol-sdk-python==3.2.2
+symbol-sdk-python==3.2.3
 websockets==14.1

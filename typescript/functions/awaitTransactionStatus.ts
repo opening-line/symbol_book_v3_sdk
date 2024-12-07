@@ -12,15 +12,20 @@ export async function awaitTransactionStatus(
       const status = await fetch(
         new URL("/transactionStatus/" + hash, nodeUrl),
         {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        }        
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
       ).then((res) => res.json())
       //指定したトランザクションステータスになっていたら結果を表示させる
-      if (status.code === 'ResourceNotFound') {
-        continue;
+      if (status.code === "ResourceNotFound") {
+        continue
       } else if (status.group === transactionStatus) {
-        console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
+        console.log(
+          "結果 ",
+          status.code,
+          "エクスプローラー ",
+          `https://testnet.symbol.fyi/transactions/${hash}`,
+        )
         resolve({})
         return
       } else if (status.group === "failed") {

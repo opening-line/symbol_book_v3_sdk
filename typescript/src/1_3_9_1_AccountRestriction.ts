@@ -8,8 +8,12 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
-import { createAndSendTransaction } from "../functions/createAndSendTransaction"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
+import { 
+  createAndSendTransaction,
+} from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -40,7 +44,7 @@ console.log(
 // （アカウント制限に必要な手数料を送付）
 const transferDescriptorPre1 =
   new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount1.address, 
+    restrictedAccount1.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
@@ -158,9 +162,9 @@ const accountAddressRestrictionDescriptor =
 
 const hashRr1 = await createAndSendTransaction(
   accountAddressRestrictionDescriptor,
-  restrictedAccount1
+  restrictedAccount1,
 )
-  
+
 console.log("===アカウント受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr1.toString(),
@@ -179,11 +183,15 @@ const transferDescriptor1 =
 
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
-  accountA
+  accountA,
 )
 
 console.log("===確認用アカウント受信禁止トランザクション===")
-await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashTf1.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // 特定のモザイクの受信禁止制限フラグ値
 // (restrictedAccount2に対してxymの受信を禁止)
@@ -204,7 +212,7 @@ const accountMosaicRestrictionDescriptor =
 
 const hashRr2 = await createAndSendTransaction(
   accountMosaicRestrictionDescriptor,
-  restrictedAccount2
+  restrictedAccount2,
 )
 
 console.log("===モザイク受信禁止トランザクション===")
@@ -229,17 +237,22 @@ const transferDescriptor2 =
 
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
-  accountA
+  accountA,
 )
 
 console.log("===確認用モザイク受信禁止トランザクション===")
-await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashTf2.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // 特定のトランザクションの送信禁止制限フラグ
 // (restrictedAccount3の転送トランザクションの送信を禁止)
 const accountOperationRestrictionFlagsValue =
   new models.AccountRestrictionFlags(
-    models.AccountRestrictionFlags.TRANSACTION_TYPE.value | // 制限対象 トランザクションタイプ
+    // 制限対象 トランザクションタイプ
+    models.AccountRestrictionFlags.TRANSACTION_TYPE.value | 
       models.AccountRestrictionFlags.BLOCK.value | // 制限内容 拒否
       models.AccountRestrictionFlags.OUTGOING.value, // 制限の方向 送信のみ
   )
@@ -256,9 +269,9 @@ const accountOperationRestrictionDescriptor =
 
 const hashRr3 = await createAndSendTransaction(
   accountOperationRestrictionDescriptor,
-  restrictedAccount3
+  restrictedAccount3,
 )
-  
+
 console.log("===トランザクション送信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr3.toString(),
@@ -277,8 +290,12 @@ const transferDescriptor3 =
 
 const hashTf3 = await createAndSendTransaction(
   transferDescriptor3,
-  restrictedAccount3
+  restrictedAccount3,
 )
 
 console.log("===確認用トランザクション送信禁止トランザクション===")
-await awaitTransactionStatus(hashTf3.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashTf3.toString(),
+  NODE_URL,
+  "confirmed",
+)

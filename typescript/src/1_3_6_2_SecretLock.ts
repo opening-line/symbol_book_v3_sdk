@@ -9,8 +9,12 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import { createAndSendTransaction } from "../functions/createAndSendTransaction"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { 
+  createAndSendTransaction,
+} from "../functions/createAndSendTransaction"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
 
 dotenv.config()
 
@@ -32,11 +36,11 @@ const hashObject = sha3.sha3_256.create()
 hashObject.update(randomUint8)
 
 // ハッシュオブジェクトからシークレット（ロック用のキー）を生成
-// 16進数の文字列に変換 
+// 16進数の文字列に変換
 const secret = hashObject.hex()
 
-console.log({proof})
-console.log({secret})
+console.log({ proof })
+console.log({ secret })
 
 const secretLock1Descriptor =
   // シークレットロックトランザクション
@@ -54,11 +58,15 @@ const secretLock1Descriptor =
 
 const hashLock = await createAndSendTransaction(
   secretLock1Descriptor,
-  accountA
+  accountA,
 )
 
 console.log("===シークレットロックトランザクション===")
-await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashLock.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
 // ロックしているシークレット（オンチェーン上でも確認可能）を参照
@@ -75,8 +83,12 @@ const proofDescriptor =
 
 const hashProof = await createAndSendTransaction(
   proofDescriptor,
-  accountB
+  accountB,
 )
 
 console.log("===シークレットプルーフトランザクション===")
-await awaitTransactionStatus(hashProof.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashProof.toString(),
+  NODE_URL,
+  "confirmed",
+)

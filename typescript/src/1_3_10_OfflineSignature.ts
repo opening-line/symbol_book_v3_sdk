@@ -8,7 +8,9 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
 
 dotenv.config()
 
@@ -86,7 +88,7 @@ const payloadAgg = JSON.parse(jsonPayloadAgg).payload
 const restoredTxAgg =
   models.AggregateCompleteTransactionV2.deserialize(
     utils.hexToUint8(payloadAgg),
-  ) 
+  )
 
 //検証を行い、改ざんされていないことを確認する
 const responseVerify = facade.verifyTransaction(

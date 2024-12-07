@@ -7,7 +7,9 @@ import {
   models,
 } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
-import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
+import { 
+  convertHexValuesInObject,
+} from "../functions/convertHexValuesInObject"
 
 // dotenvの設定
 dotenv.config()
@@ -23,9 +25,10 @@ const accountB = facade.createAccount(privateKeyB)
 
 const transferDescriptor =
   // descriptorはSymbol上のトランザクションやオブジェクトの識別子
-  new descriptors.TransferTransactionV1Descriptor( // 転送トランザクション
+  new descriptors.TransferTransactionV1Descriptor(
+    // 転送トランザクション
     accountB.address, // 送信先アカウントのアドレス
-     // 送付するモザイクを敗列で指定
+    // 送付するモザイクを敗列で指定
     [
       new descriptors.UnresolvedMosaicDescriptor(
         // 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
@@ -74,16 +77,21 @@ await new Promise(async (resolve, reject) => {
     const status = await fetch(
       new URL("/transactionStatus/" + hash, NODE_URL),
       {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      }
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
     ).then((res) => res.json())
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
-    if (status.code === 'ResourceNotFound') {
-      continue;
+    if (status.code === "ResourceNotFound") {
+      continue
     } else if (status.group === "confirmed") {
       console.log(status)
-      console.log("結果 ", status.code, "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${hash}`)
+      console.log(
+        "結果 ",
+        status.code,
+        "エクスプローラー ",
+        `https://testnet.symbol.fyi/transactions/${hash}`,
+      )
       resolve({})
       return
     } else if (status.group === "failed") {
@@ -99,9 +107,9 @@ await new Promise(async (resolve, reject) => {
 const txInfo = await fetch(
   new URL("/transactions/confirmed/" + hash.toString(), NODE_URL),
   {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  }
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  },
 ).then((res) => res.json())
 
 // オブジェクト内のオブジェクトを展開して表示

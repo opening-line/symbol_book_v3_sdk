@@ -10,8 +10,12 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
-import { createAndSendTransaction } from "../functions/createAndSendTransaction"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
+import { 
+  createAndSendTransaction,
+} from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -42,7 +46,7 @@ console.log(
 // （制限付きモザイクの作成に関わる必要な手数料を送付）
 const transferDescriptorPre =
   new descriptors.TransferTransactionV1Descriptor(
-    allowedAccount1.address, 
+    allowedAccount1.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
@@ -53,11 +57,15 @@ const transferDescriptorPre =
 
 const hashPre = await createAndSendTransaction(
   transferDescriptorPre,
-  accountA
+  accountA,
 )
 
 console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(hashPre.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashPre.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 //モザイク定義用のフラグ値（制限付きモザイクを許可）
 const mosaicFlagsValue =
@@ -70,7 +78,7 @@ const id = generateMosaicId(allowedAccount1.address, nonce)
 const mosaicDefinitionDescriptor =
   new descriptors.MosaicDefinitionTransactionV1Descriptor(
     new models.MosaicId(id),
-    new models.BlockDuration(0n),    
+    new models.BlockDuration(0n),
     new models.MosaicNonce(nonce),
     new models.MosaicFlags(mosaicFlagsValue),
     0,
@@ -92,12 +100,14 @@ const mosaicGlobalRestrictionDescriptor =
   // グローバルモザイク制限トランザクション
   new descriptors.MosaicGlobalRestrictionTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id), // 制限対象のモザイクID
-    new models.UnresolvedMosaicId(0n), // 参照するモザイクID。制限対象のモザイクIDと同じ場合は0
+    // 参照するモザイクID。制限対象のモザイクIDと同じ場合は0
+    new models.UnresolvedMosaicId(0n),
     restrictionKey, // グローバルモザイク制限のキー
     0n, // キーに対する現在の値（初回は0）
     1n, // キーに対する新しい値
     models.MosaicRestrictionType.NONE, // 値を比較する現在のタイプ（初回はNONE）
-    models.MosaicRestrictionType.EQ, // 値を比較する新しいタイプ（EQは同じ値であれば許可）
+    // 値を比較する新しいタイプ（EQは同じ値であれば許可）
+    models.MosaicRestrictionType.EQ, 
   )
 
 const txsGmr = [
@@ -250,18 +260,24 @@ const transferDescriptor1 =
     [
       new descriptors.UnresolvedMosaicDescriptor(
         new models.UnresolvedMosaicId(id),
-        new models.Amount(1n), 
+        new models.Amount(1n),
       ),
     ],
   )
 
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
-  allowedAccount1
+  allowedAccount1,
 )
 
-console.log("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
-await awaitTransactionStatus(hashTf1.toString(), NODE_URL, "confirmed")
+console.log(
+  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
+)
+await awaitTransactionStatus(
+  hashTf1.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // allowedAccount1からnotAllowedAccount1への制限モザイクの送付
 // 制限がかかりエラーになることを確認する
@@ -278,8 +294,14 @@ const transferDescriptor2 =
 
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
-  allowedAccount1
+  allowedAccount1,
 )
 
-console.log("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
-await awaitTransactionStatus(hashTf2.toString(), NODE_URL, "confirmed")
+console.log(
+  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
+)
+await awaitTransactionStatus(
+  hashTf2.toString(),
+  NODE_URL,
+  "confirmed",
+)

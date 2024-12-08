@@ -8,8 +8,12 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
-import { createAndSendTransaction } from "../functions/createAndSendTransaction"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
+import { 
+  createAndSendTransaction,
+} from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -19,7 +23,6 @@ const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
-
 
 // 転送トランザクション1(accountA=>accountB)
 const transferDescriptor1 =
@@ -88,7 +91,7 @@ const jsonPayloadAgg =
 const hashAgg = facade.hashTransaction(txAgg)
 
 const hashLockDescriptor =
-// ハッシュロックトランザクション
+  // ハッシュロックトランザクション
   new descriptors.HashLockTransactionV1Descriptor(
     new descriptors.UnresolvedMosaicDescriptor(
       new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
@@ -98,14 +101,18 @@ const hashLockDescriptor =
     hashAgg, // ロックしたいトランザクションのハッシュ
   )
 
-// アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化 
+// アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化
 const hashLock = await createAndSendTransaction(
   hashLockDescriptor,
-  accountA
+  accountA,
 )
 
 console.log("===ハッシュロックトランザクション===")
-await awaitTransactionStatus(hashLock.toString(), NODE_URL, "confirmed")
+await awaitTransactionStatus(
+  hashLock.toString(),
+  NODE_URL,
+  "confirmed",
+)
 
 // ハッシュロックトランザクションが全ノードに伝播されるまで一秒ほど時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -131,24 +138,26 @@ await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 // ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）から連署を行う
 
 const hashAggString = hashAgg.toString()
-const hashAggRestore = new models.Hash256(utils.hexToUint8(hashAggString))
+const hashAggRestore = new models.Hash256(
+  utils.hexToUint8(hashAggString),
+)
 
 // 連署者による署名
 const cosignB = accountB.keyPair.sign(hashAggRestore.bytes)
 
 const cosignatureRequest = {
   //連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
-  parentHash: hashAggString, 
-  //署名部分 
+  parentHash: hashAggString,
+  //署名部分
   signature: cosignB.toString(),
-  //連署者の公開鍵 
+  //連署者の公開鍵
   signerPublicKey: accountB.publicKey.toString(),
   //署名したトランザクションのバージョン
   version: "0",
 }
 
 const responseCos = await fetch(
-  // エンドポイントが/transactions/cosignatureであることに注意  
+  // エンドポイントが/transactions/cosignatureであることに注意
   new URL("/transactions/cosignature", NODE_URL),
   {
     method: "PUT",
@@ -160,8 +169,4 @@ const responseCos = await fetch(
 console.log({ responseCos })
 
 console.log("===アグリゲートボンデッドトランザクションへの連署===")
-await awaitTransactionStatus(
-  hashAggString,
-  NODE_URL,
-  "confirmed",
-)
+await awaitTransactionStatus(hashAggString, NODE_URL, "confirmed")

@@ -1,13 +1,11 @@
 // WebSocketを使ったトランザクションステータスの監視を行うコード
 import { PrivateKey } from "symbol-sdk"
-import {
-  Network,
-  SymbolFacade,
-  descriptors,
-} from "symbol-sdk/symbol"
+import { Network, SymbolFacade, descriptors } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { createAndSendTransaction } from "../functions/createAndSendTransaction"
+import { 
+  createAndSendTransaction,
+} from "../functions/createAndSendTransaction"
 
 dotenv.config()
 
@@ -38,9 +36,13 @@ const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
 subscribe(confirmedChannelName, (tx: any) => {
   //承認済みトランザクションを検知した時の処理
   console.log("承認済みトランザクション:", tx)
-  console.log("結果 Success", "エクスプローラー ", `https://testnet.symbol.fyi/transactions/${tx.meta.hash}`)
+  console.log(
+    "結果 Success",
+    "エクスプローラー ",
+    `https://testnet.symbol.fyi/transactions/${tx.meta.hash}`,
+  )
 })
-subscribe(unconfirmedChannelName, (tx: any) =>{
+subscribe(unconfirmedChannelName, (tx: any) => {
   //承認済みトランザクションを検知した時の処理
   console.log("未承認済みトランザクション:", tx)
 })
@@ -62,8 +64,12 @@ const initializeWebSocket = () => {
       uid = message.uid
       console.log("接続ID:", uid)
       // チャンネル購読
-      ws.send(JSON.stringify({ uid, subscribe: confirmedChannelName }));
-      ws.send(JSON.stringify({ uid, subscribe: unconfirmedChannelName }));
+      ws.send(
+        JSON.stringify({ uid, subscribe: confirmedChannelName }),
+      )
+      ws.send(
+        JSON.stringify({ uid, subscribe: unconfirmedChannelName }),
+      )
       return
     }
 
@@ -107,7 +113,4 @@ const transferDescriptor =
     "\0Hello, accountB!",
   )
 
-await createAndSendTransaction(
-  transferDescriptor,
-  accountA
-)
+await createAndSendTransaction(transferDescriptor, accountA)

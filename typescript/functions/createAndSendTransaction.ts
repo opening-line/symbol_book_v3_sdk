@@ -10,7 +10,7 @@ const facade = new SymbolFacade(Network.TESTNET)
 //descriptorからトランザクションの生成、署名、アナウンスを行う関数
 export async function createAndSendTransaction(
   descriptor: any,
-  signAccount: SymbolAccount
+  signAccount: SymbolAccount,
 ): Promise<Hash256> {
   const tx = facade.createTransactionFromTypedDescriptor(
     descriptor,

@@ -9,8 +9,12 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { awaitTransactionStatus } from "../functions/awaitTransactionStatus"
-import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
+import { 
+  awaitTransactionStatus,
+} from "../functions/awaitTransactionStatus"
+import { 
+  convertHexValuesInObject,
+} from "../functions/convertHexValuesInObject"
 
 dotenv.config()
 
@@ -43,7 +47,8 @@ const mosaicSupplyChangeDescriptor =
   new descriptors.MosaicSupplyChangeTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id), // モザイクID
     new models.Amount(100n), // 供給量
-    models.MosaicSupplyChangeAction.INCREASE, // 増やす(INCREASE)減らす(DECREASE)
+    // 増やす(INCREASE)減らす(DECREASE)
+    models.MosaicSupplyChangeAction.INCREASE,
   )
 
 const transferDescriptor =
@@ -60,7 +65,7 @@ const transferDescriptor =
 const txs = [
   {
     transaction: mosaicDefinitionDescriptor,
-    signer: accountA.publicKey, 
+    signer: accountA.publicKey,
   },
   {
     transaction: mosaicSupplyChangeDescriptor,
@@ -82,7 +87,8 @@ const innerTransactions = txs.map((tx) =>
 )
 
 // インナー（アグリゲートに内包する）トランザクションのハッシュを生成
-const innerTransactionHash = SymbolFacade.hashEmbeddedTransactions(innerTransactions)
+const innerTransactionHash =
+  SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
 const aggregateDescriptor =
   // アグリゲートトランザクション
@@ -126,13 +132,17 @@ await awaitTransactionStatus(
 )
 
 //モザイク情報を取得する
-const mosaicIdHex = new models.MosaicId(id).toString().replace('0x', '')
+const mosaicIdHex = new models.MosaicId(id)
+  .toString()
+  .replace("0x", "")
 const mosaicInfo = await fetch(
   new URL("/mosaics/" + mosaicIdHex, NODE_URL),
   {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  }
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  },
 ).then((res) => res.json())
 
-console.log(JSON.stringify(convertHexValuesInObject(mosaicInfo), null, 2))
+console.log(
+  JSON.stringify(convertHexValuesInObject(mosaicInfo), null, 2),
+)

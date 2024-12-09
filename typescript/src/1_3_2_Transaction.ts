@@ -28,7 +28,7 @@ const transferDescriptor =
   new descriptors.TransferTransactionV1Descriptor(
     // 転送トランザクション
     accountB.address, // 送信先アカウントのアドレス
-    // 送付するモザイクを敗列で指定
+    // 送付するモザイクを配列で指定
     [
       new descriptors.UnresolvedMosaicDescriptor(
         // 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID

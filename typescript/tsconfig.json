@@ -3,8 +3,6 @@
     "target": "ESNext",
     "module": "ESNext",
     "strict": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
     "types": ["node"],
     "moduleResolution": "bundler"
   }

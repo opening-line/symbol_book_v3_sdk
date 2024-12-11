@@ -21,7 +21,7 @@ $ npx tsx [ファイル名]
 ```
 例
 ```
-$ npx tsx src/1_3_2_Transaction.ts
+$ npx tsx src/1_Transaction.ts
 ```
 
 ## その他
@@ -63,5 +63,5 @@ $ python [ファイル名]
 ```
 例
 ```
-$ python 1_3_2_transaction.py
+$ python 1_transaction.py
 ```

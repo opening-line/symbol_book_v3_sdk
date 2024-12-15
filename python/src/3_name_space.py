@@ -116,6 +116,7 @@ async def main() -> None:
         NamespaceId(sub_name_space_id), NetworkType.TESTNET.value
         ),  # 送信先アカウントをネームスペースで指定
       "mosaics": [],
+      "message": b"\0Hello, AccountA!",      
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
     }
   )

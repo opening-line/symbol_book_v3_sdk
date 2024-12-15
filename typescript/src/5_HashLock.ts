@@ -143,18 +143,7 @@ const hashAggRestore = new models.Hash256(
 )
 
 // 連署者による署名
-const cosignB = accountB.keyPair.sign(hashAggRestore.bytes)
-
-const cosignatureRequest = {
-  //連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
-  parentHash: hashAggString,
-  //署名部分
-  signature: cosignB.toString(),
-  //連署者の公開鍵
-  signerPublicKey: accountB.publicKey.toString(),
-  //署名したトランザクションのバージョン
-  version: "0",
-}
+const cosignatureRequest = accountB.cosignTransactionHash(hashAggRestore,true).toJson()
 
 const responseCos = await fetch(
   // エンドポイントが/transactions/cosignatureであることに注意

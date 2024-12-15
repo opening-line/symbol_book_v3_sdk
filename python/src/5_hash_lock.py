@@ -163,26 +163,19 @@ async def main() -> None:
   hash_agg_restore: Hash256 = Hash256(hash_agg_string)
 
   # 連署者による署名
-  cosignB = account_b.key_pair.sign(hash_agg_restore.bytes)
-
-  cosignature_request = json.dumps(
-    {
-      # 連署するアグリゲートボンデッドトランザクションのトランザクションハッシュ値
-      "parentHash": hash_agg_string,
-      # 署名部分
-      "signature": str(cosignB),
-      # 連署者の公開鍵
-      "signerPublicKey": str(account_b.public_key),
-      # 署名したトランザクションのバージョン
-      "version": "0",
-    }
-  )
+  cosignature_request = account_b.cosign_transaction_hash(hash_agg_restore, True).to_json()
+  cosignature_request_snake_case = {
+      "version": cosignature_request["version"],
+      "signerPublicKey": cosignature_request["signer_public_key"],
+      "signature": cosignature_request["signature"],
+      "parentHash": cosignature_request["parent_hash"],
+  }
 
   response_cos = requests.put(
     # エンドポイントが/transactions/cosignatureであることに注意
     f"{NODE_URL}/transactions/cosignature",
     headers={"Content-Type": "application/json"},
-    data=cosignature_request,
+    data=json.dumps(cosignature_request_snake_case),
   ).json()
 
   print("Response:", response_cos)

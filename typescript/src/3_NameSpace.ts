@@ -1,6 +1,7 @@
 // ネームスペースを登録しアカウントに紐づけるコード
 import { PrivateKey } from "symbol-sdk"
 import {
+  Address,
   Network,
   SymbolFacade,
   descriptors,
@@ -65,6 +66,17 @@ const addressAliasDescriptor =
     models.AliasAction.LINK, // リンクする（LINK）、リンクを外す（UNLINK）
   )
 
+const transferDescriptor =
+  // 自分自身にネームスペースを使って転送トランザクションを行う
+  new descriptors.TransferTransactionV1Descriptor(
+    Address.fromNamespaceId(
+      new models.NamespaceId(subNameSpaceId),
+      Network.TESTNET.identifier
+    ), // 送信先アカウントをネームスペースで指定
+    [],
+    "\0Hello, AccountA!", 
+  )
+
 const txs = [
   {
     transaction: namespaceRegistrationDescriptor,
@@ -76,6 +88,10 @@ const txs = [
   },
   {
     transaction: addressAliasDescriptor,
+    signer: accountA.publicKey,
+  },
+  {
+    transaction: transferDescriptor,
     signer: accountA.publicKey,
   },
 ]

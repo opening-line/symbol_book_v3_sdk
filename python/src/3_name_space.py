@@ -14,11 +14,14 @@ from symbolchain.facade.SymbolFacade import (
 from symbolchain.symbol.IdGenerator import generate_namespace_id
 from symbolchain.sc import (
   Amount,
+  NetworkType,
+  NamespaceId,
   AliasAction,
   Signature,
   NamespaceRegistrationTransactionV1,
   AddressAliasTransactionV1,
   AggregateCompleteTransactionV2,
+  TransferTransactionV1
 )
 
 sys.path.append(
@@ -96,10 +99,23 @@ async def main() -> None:
   ) = facade.transaction_factory.create_embedded(
     {
       "type": "address_alias_transaction_v1",
-      "namespace_id": root_name_space_id,  # リンクするネームスペースID
+      "namespace_id": sub_name_space_id,  # リンクするネームスペースID
       "address": account_a.address,  # リンクするアカウントのアドレス
       # リンクする（LINK）、リンクを外す（UNLINK）
       "alias_action": AliasAction.LINK,
+      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
+    }
+  )
+
+  transfer_tx: (
+    TransferTransactionV1
+  ) = facade.transaction_factory.create_embedded(
+    {
+      "type": "transfer_transaction_v1",
+      "recipient_address": facade.Address.from_namespace_id(
+        NamespaceId(sub_name_space_id), NetworkType.TESTNET.value
+        ),  # 送信先アカウントをネームスペースで指定
+      "mosaics": [],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
     }
   )
@@ -108,6 +124,7 @@ async def main() -> None:
     name_space_registration_tx,
     sub_name_space_registration_tx,
     address_alias_tx,
+    transfer_tx
   ]
 
   inner_transaction_hash: Hash256 = (

@@ -26,6 +26,10 @@ from functions.send_transaction import send_transaction
 from functions.await_transaction_status import (
   await_transaction_status,
 )
+from functions.convert_hex_values_in_object import (
+  convert_hex_values_in_object,
+)
+
 
 
 async def main() -> None:
@@ -156,14 +160,31 @@ async def main() -> None:
   print("===アグリゲートボンデッドトランザクション===")
   await await_transaction_status(str(hash_agg), NODE_URL, "partial")
 
-  # （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
-  # ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）から連署を行う
+  # アカウントBが連署を必要とするトランザクションを検出する処理
+  query = {
+    "signerPublicKey": str(account_b.public_key),
+    "embedded": "true", #インナートランザクションも検索の対象にする
+    "order":"desc" #新しい順に結果を返す    
+  }
 
-  hash_agg_string = str(hash_agg)
+  tx_search_info = requests.get(
+    f"{NODE_URL}/transactions/partial?", params=query
+  ).json()
+
+  print(
+    json.dumps(
+      convert_hex_values_in_object(tx_search_info), indent=2
+    )
+  )
+  
+  hash_agg_string = tx_search_info["data"][0]["meta"]["aggregateHash"]
   hash_agg_restore: Hash256 = Hash256(hash_agg_string)
 
   # 連署者による署名
-  cosignature_request = account_b.cosign_transaction_hash(hash_agg_restore, True).to_json()
+  cosignature_request = account_b.cosign_transaction_hash(
+      hash_agg_restore, 
+      True
+  ).to_json()
   cosignature_request_snake_case = {
       "version": cosignature_request["version"],
       "signerPublicKey": cosignature_request["signer_public_key"],

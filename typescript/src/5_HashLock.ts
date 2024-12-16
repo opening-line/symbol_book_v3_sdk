@@ -14,6 +14,7 @@ import {
 import { 
   createAndSendTransaction,
 } from "../functions/createAndSendTransaction"
+import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
 
 dotenv.config()
 
@@ -134,16 +135,34 @@ console.log({ responseAgg })
 console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
-// （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
-// ロックされたトランザクションハッシュ（オンチェーン上でも確認可能）から連署を行う
+// アカウントBが連署を必要とするトランザクションを検出する処理
+const query = new URLSearchParams({
+  signerPublicKey: accountB.publicKey.toString(),
+  embedded: "true", //インナートランザクションも検索の対象にする
+  order:"desc" //新しい順に結果を返す
+})
 
-const hashAggString = hashAgg.toString()
+const txSearchInfo = await fetch(
+  new URL("/transactions/partial?" + query.toString(), NODE_URL),
+  {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  },
+).then((res) => res.json())
+
+console.log(
+  JSON.stringify(convertHexValuesInObject(txSearchInfo), null, 2),
+)
+
+
+const hashAggString = txSearchInfo.data[0].meta.aggregateHash
 const hashAggRestore = new models.Hash256(
   utils.hexToUint8(hashAggString),
 )
 
 // 連署者による署名
-const cosignatureRequest = accountB.cosignTransactionHash(hashAggRestore,true).toJson()
+const cosignatureRequest = 
+  accountB.cosignTransactionHash(hashAggRestore,true).toJson()
 
 const responseCos = await fetch(
   // エンドポイントが/transactions/cosignatureであることに注意

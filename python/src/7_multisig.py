@@ -151,6 +151,8 @@ async def main() -> None:
         cosig_account3.address,
         cosig_account4.address,
       ],
+      # 除名するアカウントのアドレスリスト
+      'address_deletions': [],
       # マルチシグ化するアカウントの公開鍵を指定
       "signer_public_key": multisig_account.public_key,
     }

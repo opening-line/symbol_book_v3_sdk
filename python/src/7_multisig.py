@@ -219,7 +219,7 @@ async def main() -> None:
   )
 
   # 転送トランザクション(multisigAccount=>accountA)
-  transfer_tx_1: (
+  transfer_tx: (
     TransferTransactionV1
   ) = facade.transaction_factory.create_embedded(
     {
@@ -232,7 +232,7 @@ async def main() -> None:
     }
   )
 
-  txs_tf = [transfer_tx_1]
+  txs_tf = [transfer_tx]
 
   inner_transaction_hash_tf: Hash256 = (
     facade.hash_embedded_transactions(txs_tf)

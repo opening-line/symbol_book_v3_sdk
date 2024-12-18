@@ -14,7 +14,6 @@ sys.path.append(
 )
 from functions.send_transaction import send_transaction
 
-
 async def initialize_websocket(NODE_URL, account_a) -> None:
   ws_endpoint = NODE_URL.replace("http", "ws") + "/ws"
 
@@ -25,12 +24,15 @@ async def initialize_websocket(NODE_URL, account_a) -> None:
     uid = response_json["uid"]
     print(f"接続ID: {uid}")
 
-    # 監視チャンネルの設定
-    confirmed_channel_name = f"confirmedAdded/{account_a.address}"
+    # チャンネル設定
+    confirmed_channel_name = (
+      f"confirmedAdded/{account_a.address}"
+    )
     unconfirmed_channel_name = (
       f"unconfirmedAdded/{account_a.address}"
     )
 
+    # チャンネル購読
     await websocket.send(
       json.dumps(
         {
@@ -48,12 +50,13 @@ async def initialize_websocket(NODE_URL, account_a) -> None:
       )
     )
 
-    # トランザクションの状態変化を監視
+    # WebSocketでメッセージを検知した時の処理
     try:
       while True:
         response_json = json.loads(await websocket.recv())
         topic = response_json["topic"]
         tx = response_json["data"]
+
         # 承認済みトランザクションを検知した時の処理
         if topic.startswith("confirmedAdded"):
           print(f"承認トランザクション検知: {tx}")
@@ -68,10 +71,11 @@ async def initialize_websocket(NODE_URL, account_a) -> None:
         elif topic.startswith("unconfirmedAdded"):
           print(f"未承認トランザクション検知: {tx}")
     except Exception as e:
+      # 未承認済みトランザクションを検知した時の処理
       print("WebSocketエラー:", e)
 
+    # WebSocketが閉じた時の処理
     print("WebSocket接続終了")
-    uid = ""
     await websocket.close()
 
 
@@ -91,7 +95,7 @@ async def main() -> None:
   )
   deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)
 
-  # 監視対象のトランザクション送信
+  # 監視で検知させるための転送トランザクション
   transfer_tx: (
     TransferTransactionV1
   ) = facade.transaction_factory.create(
@@ -105,8 +109,8 @@ async def main() -> None:
     }
   )
 
-  # WebSocket監視とトランザクション送信を並行して実行
   await asyncio.gather(
+    # WebSocket開始
     initialize_websocket(NODE_URL, account_a),
     send_transaction_after_delay(transfer_tx, account_a)
   )

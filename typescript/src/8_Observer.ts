@@ -16,72 +16,62 @@ const accountA = facade.createAccount(privateKeyA)
 const privateKeyB = new PrivateKey(process.env.PRIVATE_KEY_B!)
 const accountB = facade.createAccount(privateKeyB)
 
-// WebSocketクライアントの生成
-const wsEndpoint = NODE_URL.replace("http", "ws") + "/ws"
-let uid = ""
-const subscriptions = new Map<string, Function[]>()
-
-// サブスクリプション管理
-const subscribe = (channel: string, callback: Function): void => {
-  if (!subscriptions.has(channel)) {
-    subscriptions.set(channel, [])
-  }
-  subscriptions.get(channel)?.push(callback)
-}
-
-// チャンネル設定
-const confirmedChannelName = `confirmedAdded/${accountA.address}`
-const unconfirmedChannelName = `unconfirmedAdded/${accountA.address}`
-
-subscribe(confirmedChannelName, (tx: any) => {
-  //承認済みトランザクションを検知した時の処理
-  console.log("承認済みトランザクション:", tx)
-  console.log(
-    "結果 Success",
-    "エクスプローラー ",
-    `https://testnet.symbol.fyi/transactions/${tx.meta.hash}`,
-  )
-})
-subscribe(unconfirmedChannelName, (tx: any) => {
-  //承認済みトランザクションを検知した時の処理
-  console.log("未承認済みトランザクション:", tx)
-})
 // WebSocket接続の管理
-const initializeWebSocket = () => {
+const initializeWebSocket = async () => {
+  // WebSocketクライアントの生成
+  const wsEndpoint = NODE_URL.replace("http", "ws") + "/ws"
   const ws = new WebSocket(wsEndpoint)
 
   // WebSocketに接続した時の処理
-  ws.addEventListener("open", () => {
-    console.log("WebSocket接続確立")
+  ws.addEventListener("open", async () => {    
+    // 接続時のレスポンスからUIDを取得
+    const response = await new Promise((resolve) => {
+      ws.addEventListener("message", (event: MessageEvent) => {
+        const message = JSON.parse(event.data)
+        if (message.uid) {
+          console.log("接続ID:", message.uid)
+          resolve(message.uid)
+        }
+      })
+    })
+
+    // チャンネル設定
+    const confirmedChannelName = 
+      `confirmedAdded/${accountA.address}`
+    const unconfirmedChannelName = 
+      `unconfirmedAdded/${accountA.address}`
+
+    // チャンネル購読
+    ws.send(
+      JSON.stringify(
+        { uid: response, subscribe: confirmedChannelName }
+      ))
+    ws.send(
+      JSON.stringify(
+        { uid: response, subscribe: unconfirmedChannelName }
+      ))
   })
 
   // WebSocketでメッセージを検知した時の処理
   ws.addEventListener("message", (event: MessageEvent) => {
     const message = JSON.parse(event.data)
+    const topic = message.topic || "";
+    const tx = message.data
 
-    // UIDの初期処理
-    if (message.uid) {
-      uid = message.uid
-      console.log("接続ID:", uid)
-      // チャンネル購読
-      ws.send(
-        JSON.stringify({ uid, subscribe: confirmedChannelName }),
-      )
-      ws.send(
-        JSON.stringify({ uid, subscribe: unconfirmedChannelName }),
-      )
-      return
+    // 承認済みトランザクションを検知した時の処理
+    if (topic.startsWith("confirmedAdded")) {
+      console.log("承認トランザクション検知:", tx)
+      const hash = tx.meta.hash
+      console.log(
+        "結果 Success",
+        "エクスプローラー ",
+        `https://testnet.symbol.fyi/transactions/${hash}`)
+      ws.close()
     }
-
-    // 購読チャンネルからのメッセージ処理
-    const handlers = subscriptions.get(message.topic)
-    handlers?.forEach((handler) => {
-      handler(message.data)
-      // confirmedAddedを検知したらWebSocketを切る処理
-      if (message.topic === confirmedChannelName) {
-        ws.close()
-      }
-    })
+    // 未承認済みトランザクションを検知した時の処理
+    else if (topic.startsWith("unconfirmedAdded")) {
+      console.log("未承認トランザクション検知:", tx)
+    }
   })
 
   // WebSocketでエラーを検知した時の処理
@@ -92,18 +82,10 @@ const initializeWebSocket = () => {
   // WebSocketが閉じた時の処理
   ws.addEventListener("close", () => {
     console.log("WebSocket接続終了")
-    uid = ""
-    subscriptions.clear()
   })
 
   return ws
 }
-
-// WebSocket開始
-initializeWebSocket()
-
-// 接続が確立するまで1秒待つ
-await new Promise((resolve) => setTimeout(resolve, 1000))
 
 // 監視で検知させるための転送トランザクション
 const transferDescriptor =
@@ -113,4 +95,9 @@ const transferDescriptor =
     "\0Hello, accountB!",
   )
 
+// WebSocket開始
+await initializeWebSocket()
+// 接続が確立するまで1秒待つ
+await new Promise((resolve) => setTimeout(resolve, 1000))
+// トランザクション送信
 await createAndSendTransaction(transferDescriptor, accountA)

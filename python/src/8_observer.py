@@ -105,10 +105,17 @@ async def main() -> None:
     }
   )
 
+  # WebSocket監視とトランザクション送信を並行して実行
+  await asyncio.gather(
+    initialize_websocket(NODE_URL, account_a),
+    send_transaction_after_delay(transfer_tx, account_a)
+  )
+
+async def send_transaction_after_delay(transfer_tx, account_a):
+  # 接続が確立するまで1秒待つ
+  await asyncio.sleep(1)  
+  # トランザクション送信
   send_transaction(transfer_tx, account_a)
-
-  await initialize_websocket(NODE_URL, account_a)
-
 
 if __name__ == "__main__":
   asyncio.run(main())

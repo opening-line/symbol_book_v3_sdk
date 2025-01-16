@@ -78,7 +78,7 @@ const txAgg = facade.createTransactionFromTypedDescriptor(
   accountA.publicKey,
   100,
   60 * 60 * 2,
-  1, // 連署者数が必要な場合は必ず数を指定する（accountBの連署が必要）
+  1, // 連署者が必要な場合は必ず数を指定する（accountBの連署が必要）
 )
 
 const signatureAgg = accountA.signTransaction(txAgg)

@@ -28,7 +28,7 @@ const accountA = facade.createAccount(privateKeyA)
 const keyText = "key_" + Math.random().toString(36).substring(2, 7)
 // メタデータの値の指定
 const valueText = "test"
-// bigIntに変換
+// メタデータキー用のbigIntに変換
 const metadataKey = metadataGenerateKey(keyText)
 // 文字列をエンコードしてUint8Arrayに変換するためのインターフェース
 const textEncoder = new TextEncoder()

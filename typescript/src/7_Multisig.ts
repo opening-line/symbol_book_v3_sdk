@@ -53,7 +53,7 @@ const transferDescriptorPre1 =
     multisigAccount.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -66,7 +66,7 @@ const transferDescriptorPre2 =
     cosigAccount1.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],

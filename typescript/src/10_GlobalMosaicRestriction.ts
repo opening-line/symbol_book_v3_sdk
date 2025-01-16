@@ -49,7 +49,7 @@ const transferDescriptorPre =
     allowedAccount1.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(60000000n), // 60xym
       ),
     ],

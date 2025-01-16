@@ -32,7 +32,7 @@ const transferDescriptor =
     [
       new descriptors.UnresolvedMosaicDescriptor(
         // 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym、xymは可分性（小数点以下）が6
       ),
     ],

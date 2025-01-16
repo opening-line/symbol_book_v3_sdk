@@ -49,7 +49,7 @@ const secretLock1Descriptor =
     new Hash256(utils.hexToUint8(secret)), // シークレット
     new descriptors.UnresolvedMosaicDescriptor(
       // ロックしておくモザイクを指定
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+      new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
       new models.Amount(1000000n),
     ),
     new models.BlockDuration(480n), // ロック期間（ブロック数）

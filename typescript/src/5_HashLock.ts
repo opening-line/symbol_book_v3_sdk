@@ -31,7 +31,7 @@ const transferDescriptor1 =
     accountB.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -95,7 +95,7 @@ const hashLockDescriptor =
   // ハッシュロックトランザクション
   new descriptors.HashLockTransactionV1Descriptor(
     new descriptors.UnresolvedMosaicDescriptor(
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+      new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
       new models.Amount(10000000n), // ロック用に固定で10xymを預ける
     ),
     new models.BlockDuration(5760n), // ロック期間（ブロック数）

@@ -47,7 +47,7 @@ const transferDescriptorPre1 =
     restrictedAccount1.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -60,7 +60,7 @@ const transferDescriptorPre2 =
     restrictedAccount2.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -73,7 +73,7 @@ const transferDescriptorPre3 =
     restrictedAccount3.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(1000000n), // 1xym
       ),
     ],
@@ -205,7 +205,7 @@ const accountMosaicRestrictionDescriptor =
   new descriptors.AccountMosaicRestrictionTransactionV1Descriptor(
     blockMosaicFlagsValue, // フラグの指定
     [
-      new models.UnresolvedMosaicId(0x72c0212e67a08bcen), // 対象モザイクリスト
+      new models.UnresolvedMosaicId(0x72C0212E67A08BCEn), // 対象モザイクリスト
     ],
     [], // 解除対象モザイクリスト
   )
@@ -229,7 +229,7 @@ const transferDescriptor2 =
     restrictedAccount2.address,
     [
       new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72c0212e67a08bcen),
+        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
         new models.Amount(10000000n), // 10xym
       ),
     ],

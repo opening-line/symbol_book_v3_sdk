@@ -8,13 +8,13 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
+import {
+  waitTransactionStatus,
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -125,7 +125,7 @@ console.log({ responseRestoredTxAgg })
 const hashRestoredTxAgg = facade.hashTransaction(restoredTxAgg)
 
 console.log("===オフライン署名したトランザクションのアナウンス===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRestoredTxAgg.toString(),
   NODE_URL,
   "confirmed",

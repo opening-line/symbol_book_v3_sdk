@@ -9,16 +9,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
-  convertHexValuesInObject,
-} from "../functions/convertHexValuesInObject"
+import {
+  waitTransactionStatus,
+  convertHexValuesInObject
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -89,7 +87,7 @@ console.log({ responseAgg })
 const hashAgg = facade.hashTransaction(txAgg)
 
 console.log("===アカウントメタデータトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",

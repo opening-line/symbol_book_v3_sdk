@@ -3,13 +3,14 @@ import { PrivateKey } from "symbol-sdk"
 import { Network, SymbolFacade, descriptors } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
+import {
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
+} from "./functions"
+
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)

@@ -9,16 +9,14 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -62,7 +60,7 @@ const hashLock = await createAndSendTransaction(
 )
 
 console.log("===シークレットロックトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -87,7 +85,7 @@ const hashProof = await createAndSendTransaction(
 )
 
 console.log("===シークレットプルーフトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashProof.toString(),
   NODE_URL,
   "confirmed",

@@ -1,6 +1,5 @@
 # マルチシグアカウントの構成及びマルチシグアカウントからのトランザクションを行うコード
 import os
-import sys
 import json
 import requests
 import asyncio
@@ -20,18 +19,14 @@ from symbolchain.sc import (
   MultisigAccountModificationTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
 )
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -132,7 +127,7 @@ async def main() -> None:
   hash_pre: Hash256 = facade.hash_transaction(tx_pre)
 
   print("===事前手数料転送トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -214,7 +209,7 @@ async def main() -> None:
   hash_mod: Hash256 = facade.hash_transaction(tx_mod)
 
   print("===マルチシグアカウント構成トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_mod), NODE_URL, "confirmed"
   )
 
@@ -280,7 +275,7 @@ async def main() -> None:
   hash_tf: Hash256 = facade.hash_transaction(tx_tf)
 
   print("===転送トランザクション（マルチシグアカウントから）===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf), NODE_URL, "confirmed"
   )
 

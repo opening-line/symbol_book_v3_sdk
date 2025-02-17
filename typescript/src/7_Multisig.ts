@@ -8,13 +8,13 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
+import {
+  waitTransactionStatus,
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -125,7 +125,7 @@ console.log({ responsePre })
 const hashPre = facade.hashTransaction(txPre)
 
 console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -207,7 +207,7 @@ console.log({ responseMod })
 const hashMod = facade.hashTransaction(txMod)
 
 console.log("===マルチシグアカウント構成トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashMod.toString(),
   NODE_URL,
   "confirmed",
@@ -280,4 +280,4 @@ console.log({ responseTf })
 const hashTf = facade.hashTransaction(txTf)
 
 console.log("===転送トランザクション（マルチシグアカウントから）===")
-await awaitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")
+await waitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")

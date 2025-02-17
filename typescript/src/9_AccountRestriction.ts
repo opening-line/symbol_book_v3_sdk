@@ -131,11 +131,11 @@ const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadPre,
 }).then((res) => res.json())
 
-console.log({ responsePre })
+console.log("===事前手数料転送トランザクション===")
+console.log("アナウンス結果", responsePre)
 
 const hashPre = facade.hashTransaction(txPre)
 
-console.log("===事前手数料転送トランザクション===")
 await awaitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
@@ -160,12 +160,12 @@ const accountAddressRestrictionDescriptor =
     [], // 解除対象アドレスリスç
   )
 
+console.log("===アカウント受信禁止トランザクション===")
 const hashRr1 = await createAndSendTransaction(
   accountAddressRestrictionDescriptor,
   restrictedAccount1,
 )
 
-console.log("===アカウント受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr1.toString(),
   NODE_URL,
@@ -181,12 +181,12 @@ const transferDescriptor1 =
     "\0Hello, restrictedAccount1!",
   )
 
+console.log("===確認用アカウント受信禁止トランザクション===")
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   accountA,
 )
 
-console.log("===確認用アカウント受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
@@ -210,12 +210,12 @@ const accountMosaicRestrictionDescriptor =
     [], // 解除対象モザイクリスト
   )
 
+console.log("===モザイク受信禁止トランザクション===")
 const hashRr2 = await createAndSendTransaction(
   accountMosaicRestrictionDescriptor,
   restrictedAccount2,
 )
 
-console.log("===モザイク受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr2.toString(),
   NODE_URL,
@@ -235,12 +235,12 @@ const transferDescriptor2 =
     ],
   )
 
+console.log("===確認用モザイク受信禁止トランザクション===") 
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   accountA,
 )
 
-console.log("===確認用モザイク受信禁止トランザクション===")
 await awaitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,
@@ -267,12 +267,12 @@ const accountOperationRestrictionDescriptor =
     [], // 解除対象のトランザクションタイプリスト
   )
 
+console.log("===トランザクション送信禁止トランザクション===")
 const hashRr3 = await createAndSendTransaction(
   accountOperationRestrictionDescriptor,
   restrictedAccount3,
 )
 
-console.log("===トランザクション送信禁止トランザクション===")
 await awaitTransactionStatus(
   hashRr3.toString(),
   NODE_URL,
@@ -288,12 +288,12 @@ const transferDescriptor3 =
     "\0Hello, accountA!",
   )
 
+console.log("===確認用トランザクション送信禁止トランザクション===")  
 const hashTf3 = await createAndSendTransaction(
   transferDescriptor3,
   restrictedAccount3,
 )
 
-console.log("===確認用トランザクション送信禁止トランザクション===")
 await awaitTransactionStatus(
   hashTf3.toString(),
   NODE_URL,

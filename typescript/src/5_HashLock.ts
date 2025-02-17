@@ -102,13 +102,13 @@ const hashLockDescriptor =
     hashAgg, // ロックしたいトランザクションのハッシュ
   )
 
+console.log("===ハッシュロックトランザクション===")
+
 // アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化
 const hashLock = await createAndSendTransaction(
   hashLockDescriptor,
   accountA,
 )
-
-console.log("===ハッシュロックトランザクション===")
 await awaitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
@@ -129,10 +129,10 @@ const responseAgg = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("===アグリゲートボンデッドトランザクション===")
+console.log("アナウンス結果", responseAgg)
 
 // partial（オンチェーン上で連署待ちの状態）の確認
-console.log("===アグリゲートボンデッドトランザクション===")
 await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
 // アカウントBが連署を必要とするトランザクションを検出する処理
@@ -151,9 +151,9 @@ const txSearchInfo = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "アグリゲートボンデッドトランザクションJSON表示",
   JSON.stringify(convertHexValuesInObject(txSearchInfo), null, 2),
 )
-
 
 const hashAggString = txSearchInfo.data[0].meta.aggregateHash
 const hashAggRestore = new models.Hash256(
@@ -174,7 +174,7 @@ const responseCos = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseCos })
-
 console.log("===アグリゲートボンデッドトランザクションへの連署===")
+console.log("アナウンス結果", responseCos)
+
 await awaitTransactionStatus(hashAggString, NODE_URL, "confirmed")

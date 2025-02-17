@@ -120,11 +120,11 @@ const responseRestoredTxAgg = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseRestoredTxAgg })
+console.log("===オフライン署名したトランザクションのアナウンス===")
+console.log("アナウンス結果", responseRestoredTxAgg)
 
 const hashRestoredTxAgg = facade.hashTransaction(restoredTxAgg)
 
-console.log("===オフライン署名したトランザクションのアナウンス===")
 await awaitTransactionStatus(
   hashRestoredTxAgg.toString(),
   NODE_URL,

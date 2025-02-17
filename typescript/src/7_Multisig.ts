@@ -120,11 +120,11 @@ const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadPre,
 }).then((res) => res.json())
 
-console.log({ responsePre })
+console.log("===事前手数料転送トランザクション===")
+console.log("アナウンス結果", responsePre)
 
 const hashPre = facade.hashTransaction(txPre)
 
-console.log("===事前手数料転送トランザクション===")
 await awaitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
@@ -202,11 +202,11 @@ const responseMod = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadMod,
 }).then((res) => res.json())
 
-console.log({ responseMod })
+console.log("===マルチシグアカウント構成トランザクション===")
+console.log("アナウンス結果", responseMod)
 
 const hashMod = facade.hashTransaction(txMod)
 
-console.log("===マルチシグアカウント構成トランザクション===")
 await awaitTransactionStatus(
   hashMod.toString(),
   NODE_URL,
@@ -275,9 +275,9 @@ const responseTf = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadTf,
 }).then((res) => res.json())
 
-console.log({ responseTf })
+console.log("===転送トランザクション（マルチシグアカウントから）===")
+console.log("アナウンス結果", responseTf)
 
 const hashTf = facade.hashTransaction(txTf)
 
-console.log("===転送トランザクション（マルチシグアカウントから）===")
 await awaitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")

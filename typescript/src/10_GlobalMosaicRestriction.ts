@@ -55,12 +55,12 @@ const transferDescriptorPre =
     ],
   )
 
+console.log("===事前手数料転送トランザクション===")
 const hashPre = await createAndSendTransaction(
   transferDescriptorPre,
   accountA,
 )
 
-console.log("===事前手数料転送トランザクション===")
 await awaitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
@@ -162,11 +162,11 @@ const responseGmr = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadGmr,
 }).then((res) => res.json())
 
-console.log({ responseGmr })
+console.log("===制限付きモザイク発行及び転送トランザクション===")
+console.log("アナウンス結果", responseGmr)
 
 const hashGmr = facade.hashTransaction(txGmr)
 
-console.log("===制限付きモザイク発行及び転送トランザクション===")
 await awaitTransactionStatus(
   hashGmr.toString(),
   NODE_URL,
@@ -242,11 +242,11 @@ const responseMar = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadMar,
 }).then((res) => res.json())
 
-console.log({ responseMar })
+console.log("===制限付きモザイクの送受信許可トランザクション===")
+console.log("アナウンス結果", responseMar)
 
 const hashMar = facade.hashTransaction(txMar)
 
-console.log("===制限付きモザイクの送受信許可トランザクション===")
 await awaitTransactionStatus(
   hashMar.toString(),
   NODE_URL,
@@ -265,14 +265,14 @@ const transferDescriptor1 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
+)
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
-)
 await awaitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
@@ -292,14 +292,14 @@ const transferDescriptor2 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
+)
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
-)
 await awaitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,

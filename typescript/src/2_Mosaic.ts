@@ -118,11 +118,10 @@ const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("===モザイク発行及び転送トランザクション===")
+console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
-
-console.log("===モザイク発行及び転送トランザクション===")
 
 // トランザクションの状態を確認する処理を関数化
 await awaitTransactionStatus(
@@ -144,5 +143,6 @@ const mosaicInfo = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "モザイク情報JSON表示",
   JSON.stringify(convertHexValuesInObject(mosaicInfo), null, 2),
 )

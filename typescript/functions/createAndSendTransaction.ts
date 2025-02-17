@@ -29,7 +29,7 @@ export async function createAndSendTransaction(
     body: jsonPayload,
   }).then((res) => res.json())
 
-  console.log({ response })
+  console.log("アナウンス結果", response)
 
   return facade.hashTransaction(tx)
 }

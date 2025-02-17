@@ -84,11 +84,11 @@ const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("===アカウントメタデータトランザクション===")
+console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-console.log("===アカウントメタデータトランザクション===")
 await awaitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,
@@ -109,6 +109,7 @@ const metadataInfo1 = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "メタデータ情報アドレス検索結果JSON表示",
   JSON.stringify(convertHexValuesInObject(metadataInfo1), null, 2),
 )
 
@@ -129,5 +130,6 @@ const metadataInfo2 = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "メタデータ情報メタデータキー検索結果JSON表示",
   JSON.stringify(convertHexValuesInObject(metadataInfo2), null, 2),
 )

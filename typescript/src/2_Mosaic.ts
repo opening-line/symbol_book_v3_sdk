@@ -112,6 +112,7 @@ const jsonPayloadAgg =
     signatureAgg,
   )
 
+console.log("アナウンス開始")
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },

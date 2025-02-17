@@ -115,7 +115,6 @@ const txInfo = await fetch(
 ).then((res) => res.json())
 
 // オブジェクト内のオブジェクトを展開して表示
-console.log("トランザクション情報を取得中・・・")
 console.log(JSON.stringify(txInfo, null, 2))
 
 // アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる

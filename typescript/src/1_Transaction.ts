@@ -55,6 +55,7 @@ const jsonPayload = facade.transactionFactory.static.attachSignature(
 )
 
 // ノードにアナウンスを行う
+console.log("アナウンス開始")
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT", //書き込み時はPUTを指定する
   headers: { "Content-Type": "application/json" },

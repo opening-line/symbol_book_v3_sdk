@@ -37,8 +37,8 @@ hashObject.update(randomUint8)
 // 16進数の文字列に変換
 const secret = hashObject.hex()
 
-console.log({ proof })
-console.log({ secret })
+console.log("プルーフ", proof)
+console.log("シークレット", secret)
 
 const secretLock1Descriptor =
   // シークレットロックトランザクション
@@ -54,12 +54,11 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用するアルゴリズム
   )
 
+console.log("===シークレットロックトランザクション===")
 const hashLock = await createAndSendTransaction(
   secretLock1Descriptor,
   accountA,
 )
-
-console.log("===シークレットロックトランザクション===")
 await waitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
@@ -79,12 +78,12 @@ const proofDescriptor =
     utils.hexToUint8(proof), // プルーフ
   )
 
+console.log("===シークレットプルーフトランザクション===")
 const hashProof = await createAndSendTransaction(
   proofDescriptor,
   accountB,
 )
 
-console.log("===シークレットプルーフトランザクション===")
 await waitTransactionStatus(
   hashProof.toString(),
   NODE_URL,

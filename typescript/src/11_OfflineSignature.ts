@@ -111,6 +111,7 @@ const jsonPayloadRestoredTxAgg = JSON.stringify({
   payload: utils.uint8ToHex(restoredTxAgg.serialize()),
 })
 
+console.log("===オフライン署名したトランザクションのアナウンス===")
 const responseRestoredTxAgg = await fetch(
   new URL("/transactions", NODE_URL),
   {
@@ -120,11 +121,10 @@ const responseRestoredTxAgg = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseRestoredTxAgg })
+console.log("アナウンス結果", responseRestoredTxAgg)
 
 const hashRestoredTxAgg = facade.hashTransaction(restoredTxAgg)
 
-console.log("===オフライン署名したトランザクションのアナウンス===")
 await waitTransactionStatus(
   hashRestoredTxAgg.toString(),
   NODE_URL,

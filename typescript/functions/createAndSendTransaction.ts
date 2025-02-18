@@ -22,7 +22,8 @@ export async function createAndSendTransaction(
   const signature = signAccount.signTransaction(tx)
   const jsonPayload =
     facade.transactionFactory.static.attachSignature(tx, signature)
-
+    
+  console.log("アナウンス開始")
   const response = await fetch(new URL("/transactions", NODE_URL), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

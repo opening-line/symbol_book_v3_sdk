@@ -109,7 +109,9 @@ const jsonPayloadAgg =
     txAgg,
     signatureAgg,
   )
+
 console.log("===モザイク発行及び転送トランザクション===")
+console.log("アナウンス開始")
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },

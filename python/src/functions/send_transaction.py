@@ -1,3 +1,4 @@
+import os
 import requests
 from symbolchain.facade.SymbolFacade import (
   SymbolFacade,
@@ -10,7 +11,7 @@ from symbolchain.sc import Amount, Signature
 
 # トランザクションを受け取り、署名し、トランザクションハッシュを返す関数
 def send_transaction(tx: Any, signAccount: SymbolAccount) -> Hash256:
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   tx.fee = Amount(100 * tx.size)

@@ -8,16 +8,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -125,18 +123,18 @@ const jsonPayloadPre =
     signaturePre,
   )
 
+console.log("===事前手数料転送トランザクション===")
 const responsePre = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadPre,
 }).then((res) => res.json())
 
-console.log({ responsePre })
+console.log("アナウンス結果", responsePre)
 
 const hashPre = facade.hashTransaction(txPre)
 
-console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -160,13 +158,13 @@ const accountAddressRestrictionDescriptor =
     [], // 解除対象アドレスリスç
   )
 
+console.log("===アカウント受信禁止トランザクション===")
 const hashRr1 = await createAndSendTransaction(
   accountAddressRestrictionDescriptor,
   restrictedAccount1,
 )
 
-console.log("===アカウント受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr1.toString(),
   NODE_URL,
   "confirmed",
@@ -181,13 +179,13 @@ const transferDescriptor1 =
     "\0Hello, restrictedAccount1!",
   )
 
+console.log("===確認用アカウント受信禁止トランザクション===")
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   accountA,
 )
 
-console.log("===確認用アカウント受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
   "confirmed",
@@ -209,14 +207,14 @@ const accountMosaicRestrictionDescriptor =
     ],
     [], // 解除対象モザイクリスト
   )
-
+  
+console.log("===モザイク受信禁止トランザクション===")
 const hashRr2 = await createAndSendTransaction(
   accountMosaicRestrictionDescriptor,
   restrictedAccount2,
 )
 
-console.log("===モザイク受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr2.toString(),
   NODE_URL,
   "confirmed",
@@ -235,13 +233,13 @@ const transferDescriptor2 =
     ],
   )
 
+console.log("===確認用モザイク受信禁止トランザクション===")
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   accountA,
 )
 
-console.log("===確認用モザイク受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,
   "confirmed",
@@ -267,13 +265,13 @@ const accountOperationRestrictionDescriptor =
     [], // 解除対象のトランザクションタイプリスト
   )
 
+console.log("===トランザクション送信禁止トランザクション===")
 const hashRr3 = await createAndSendTransaction(
   accountOperationRestrictionDescriptor,
   restrictedAccount3,
 )
 
-console.log("===トランザクション送信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr3.toString(),
   NODE_URL,
   "confirmed",
@@ -287,14 +285,14 @@ const transferDescriptor3 =
     [],
     "\0Hello, accountA!",
   )
-
+  
+console.log("===確認用トランザクション送信禁止トランザクション===")
 const hashTf3 = await createAndSendTransaction(
   transferDescriptor3,
   restrictedAccount3,
 )
 
-console.log("===確認用トランザクション送信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf3.toString(),
   NODE_URL,
   "confirmed",

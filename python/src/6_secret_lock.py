@@ -1,6 +1,5 @@
 # シークレット（ロック用のキー）とプルーフ（解除用のキー）を使って特定のモザイクの送付をロックしておくコード
 import os
-import sys
 import requests
 import asyncio
 import hashlib
@@ -16,19 +15,15 @@ from symbolchain.sc import (
   SecretProofTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
+  send_transaction,
 )
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -92,7 +87,7 @@ async def main() -> None:
   )
 
   print("===シークレットロックトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(secret_lock_hash), NODE_URL, "confirmed"
   )
 
@@ -120,7 +115,7 @@ async def main() -> None:
   )
 
   print("===シークレットプルーフトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(secret_proof_hash), NODE_URL, "confirmed"
   )
 

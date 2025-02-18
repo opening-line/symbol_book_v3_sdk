@@ -8,17 +8,15 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
-import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
+  convertHexValuesInObject
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -102,14 +100,14 @@ const hashLockDescriptor =
     hashAgg, // ロックしたいトランザクションのハッシュ
   )
 
+console.log("===ハッシュロックトランザクション===")
 // アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化
 const hashLock = await createAndSendTransaction(
   hashLockDescriptor,
   accountA,
 )
 
-console.log("===ハッシュロックトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -118,6 +116,7 @@ await awaitTransactionStatus(
 // ハッシュロックトランザクションが全ノードに伝播されるまで一秒ほど時間を置く
 await new Promise((resolve) => setTimeout(resolve, 1000))
 
+console.log("===アグリゲートボンデッドトランザクション===")
 // アグリゲートボンデッドトランザクションのアナウンス
 console.log("アナウンス開始")
 const responseAgg = await fetch(
@@ -130,11 +129,10 @@ const responseAgg = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("アナウンス結果", responseAgg)
 
 // partial（オンチェーン上で連署待ちの状態）の確認
-console.log("===アグリゲートボンデッドトランザクション===")
-await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
+await waitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
 // アカウントBが連署を必要とするトランザクションを検出する処理
 const query = new URLSearchParams({
@@ -152,6 +150,7 @@ const txSearchInfo = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "アグリゲートボンデッドトランザクションJSON表示",
   JSON.stringify(convertHexValuesInObject(txSearchInfo), null, 2),
 )
 
@@ -165,7 +164,9 @@ const hashAggRestore = new models.Hash256(
 const cosignatureRequest = 
   accountB.cosignTransactionHash(hashAggRestore,true).toJson()
   
+console.log("===アグリゲートボンデッドトランザクションへの連署===")
 console.log("アナウンス開始")
+
 const responseCos = await fetch(
   // エンドポイントが/transactions/cosignatureであることに注意
   new URL("/transactions/cosignature", NODE_URL),
@@ -176,7 +177,6 @@ const responseCos = await fetch(
   },
 ).then((res) => res.json())
 
-console.log({ responseCos })
+console.log("アナウンス結果", responseCos)
 
-console.log("===アグリゲートボンデッドトランザクションへの連署===")
-await awaitTransactionStatus(hashAggString, NODE_URL, "confirmed")
+await waitTransactionStatus(hashAggString, NODE_URL, "confirmed")

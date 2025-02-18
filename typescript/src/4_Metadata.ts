@@ -9,16 +9,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
-  convertHexValuesInObject,
-} from "../functions/convertHexValuesInObject"
+import {
+  waitTransactionStatus,
+  convertHexValuesInObject
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -78,18 +76,20 @@ const jsonPayloadAgg =
     signatureAgg,
   )
 
+console.log("===アカウントメタデータトランザクション===")
+console.log("アナウンス開始")
+
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-console.log("===アカウントメタデータトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",
@@ -109,6 +109,7 @@ const metadataInfo1 = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "メタデータ情報アドレス検索結果JSON表示",
   JSON.stringify(convertHexValuesInObject(metadataInfo1), null, 2),
 )
 
@@ -129,5 +130,6 @@ const metadataInfo2 = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "メタデータ情報メタデータキー検索結果JSON表示",
   JSON.stringify(convertHexValuesInObject(metadataInfo2), null, 2),
 )

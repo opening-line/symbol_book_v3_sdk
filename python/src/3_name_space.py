@@ -159,6 +159,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "ネームスペース情報JSON表示",
     json.dumps(
       convert_hex_values_in_object(name_space_info), indent=2
     )

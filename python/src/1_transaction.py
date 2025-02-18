@@ -94,14 +94,16 @@ def main() -> None:
     if status["code"] == "ResourceNotFound":
       continue
     elif status["group"] == "confirmed":
-      print(status)
-      explorer = (
-        f"https://testnet.symbol.fyi/transactions/{hash}"
-      )
-      print(f"結果: {status['code']} エクスプローラー: {explorer}")
+      print("confirmed完了!")
+      print("承認結果", status["code"])
+      print("承認状態", status["group"])
+      print("トランザクションハッシュ", hash)
+      print("ブロック高", status["height"])
+      print("Symbolエクスプローラー ")
+      print(f"https://testnet.symbol.fyi/transactions/{hash}")
       break
     elif status["group"] == "failed":
-      print("結果 エラー:", status["code"])
+      print("承認結果:", status["code"])
       break
   else:
     raise Exception("トランザクションが確認されませんでした。")
@@ -113,13 +115,15 @@ def main() -> None:
   ).json()
 
   # オブジェクト内のオブジェクトを展開して表示
-  print(json.dumps(tx_info, indent=2))
+  print("トランザクション情報JSON表示",
+        json.dumps(tx_info, indent=2))
 
   # アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
   # アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
   # メッセージはバイトに変換し、UTF-8形式でデコード。
   # 16進数のアドレスとメッセージを変換する処理を関数化
-  print(json.dumps(convert_hex_values_in_object(tx_info), indent=2))
+  print("トランザクション情報JSON表示",
+    json.dumps(convert_hex_values_in_object(tx_info), indent=2))
 
 
 if __name__ == "__main__":

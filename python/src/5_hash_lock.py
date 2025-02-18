@@ -157,6 +157,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "アグリゲートボンデッドトランザクションJSON表示",    
     json.dumps(
       convert_hex_values_in_object(tx_search_info), indent=2
     )

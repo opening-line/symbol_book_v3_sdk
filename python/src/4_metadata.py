@@ -117,6 +117,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "メタデータ情報アドレス検索結果JSON表示",
     json.dumps(
       convert_hex_values_in_object(metadata_info1), indent=2
     )
@@ -134,6 +135,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "メタデータ情報メタデータキー検索結果JSON表示",    
     json.dumps(
       convert_hex_values_in_object(metadata_info2), indent=2
     )

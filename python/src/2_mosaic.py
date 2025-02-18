@@ -152,6 +152,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "モザイク情報JSON表示",    
     json.dumps(
       convert_hex_values_in_object(mosaic_info), indent=2
     )

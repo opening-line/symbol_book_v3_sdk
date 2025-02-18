@@ -1,6 +1,5 @@
 # メタデータをアカウントに紐づけるコード
 import os
-import sys
 import json
 import dotenv
 import requests
@@ -22,21 +21,15 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
+  wait_transaction_status,
 )
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   dotenv.load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -66,16 +59,14 @@ async def main() -> None:
   # メタデータのトランザクションを生成
   metadata_tx: (
     AccountMetadataTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "account_metadata_transaction_v1",
       "target_address": account_a.address,  # 紐付ける対象のアカウントアドレス
       "scoped_metadata_key": metadata_key,  # 紐づけるメタデータのキー
       "value": metadata_value,  # 紐づけるメタデータの値
       "value_size_delta": len(metadata_value),  # 紐づけるメタデータの長さ
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [metadata_tx]
 
@@ -85,15 +76,13 @@ async def main() -> None:
 
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(100 * tx_agg.size)
 
   signature_agg: Signature = account_a.sign_transaction(tx_agg)
@@ -102,18 +91,19 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("===アカウントメタデータトランザクション===")
+  print("アナウンス開始")  
   response_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_agg,
   ).json()
 
-  print("Response:", response_agg)
+  print("アナウンス結果", response_agg)
 
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
-  print("===アカウントメタデータトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 
@@ -127,6 +117,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "メタデータ情報アドレス検索結果JSON表示",
     json.dumps(
       convert_hex_values_in_object(metadata_info1), indent=2
     )
@@ -144,6 +135,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "メタデータ情報メタデータキー検索結果JSON表示",    
     json.dumps(
       convert_hex_values_in_object(metadata_info2), indent=2
     )

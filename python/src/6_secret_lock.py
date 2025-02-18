@@ -1,6 +1,5 @@
 # シークレット（ロック用のキー）とプルーフ（解除用のキー）を使って特定のモザイクの送付をロックしておくコード
 import os
-import sys
 import requests
 import asyncio
 import hashlib
@@ -16,19 +15,15 @@ from symbolchain.sc import (
   SecretProofTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
+  send_transaction,
 )
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -64,14 +59,13 @@ async def main() -> None:
   # 16進数の文字列に変換
   secret = str(secret_hash)
 
-  print({"proof": proof})
-  print({"secret": secret})
+  print({"プルーフ": proof})
+  print({"シークレット": secret})
 
   # シークレットロックトランザクションの生成
   secret_lock_tx: (
     SecretLockTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "secret_lock_transaction_v1",
       "recipient_address": account_b.address,  # 送付先（解除先）のアドレス
       "secret": Hash256(secret),  # シークレット
@@ -84,15 +78,14 @@ async def main() -> None:
       "hash_algorithm": "hash_256",  # ロック生成に使用するアルゴリズム
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
+    })
 
+  print("===シークレットロックトランザクション===")
   secret_lock_hash: Hash256 = send_transaction(
     secret_lock_tx, account_a
   )
 
-  print("===シークレットロックトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(secret_lock_hash), NODE_URL, "confirmed"
   )
 
@@ -103,8 +96,7 @@ async def main() -> None:
   # シークレットプルーフトランザクションの生成
   secret_proof_tx: (
     SecretProofTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "secret_proof_transaction_v1",
       "recipient_address": account_b.address,  # 送付先（解除先）のアドレス
       "secret": Hash256(secret),  # シークレット
@@ -112,15 +104,14 @@ async def main() -> None:
       "hash_algorithm": "hash_256",  # ロック生成に使用するアルゴリズム
       "signer_public_key": account_b.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
+    })
 
+  print("===シークレットプルーフトランザクション===")
   secret_proof_hash: Hash256 = send_transaction(
     secret_proof_tx, account_b
   )
 
-  print("===シークレットプルーフトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(secret_proof_hash), NODE_URL, "confirmed"
   )
 

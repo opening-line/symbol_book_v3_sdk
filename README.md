@@ -2,7 +2,7 @@
 1-3章で扱うtypescriptとpythonのSDK及び各種トランザクションの生成
 
 # typescrypt
-node v23.3.0
+node v22系を使用する
 
 ## 環境構築手順
 モジュールのインストール
@@ -15,6 +15,13 @@ $ npm i
 $ cp .env.sample .env
 ```
 
+## 環境変数に必要なアカウント  
+環境変数に必要なアカウントは以下のコマンドで作ることができます
+
+```
+$ npx tsx src/utils/generateAccount.ts
+```
+
 ## 実行方法
 ```
 $ npx tsx [ファイル名]
@@ -24,11 +31,15 @@ $ npx tsx [ファイル名]
 $ npx tsx src/1_Transaction.ts
 ```
 
-## その他
-環境変数に必要なアカウントは以下のコマンドで作ることができます
+## typescript一括実行
+typescriptのすべてのコードを実行したい場合は以下スクリプトを実行します。
 ```
-$ npx tsx utils/generateAccount.ts
+mac
+$ scripts/run-all.sh
+windows
+$ scripts/run-all.bat
 ```
+実行結果はコンソール上に表示、およびscripts/logディレクトリにログとして生成されます。
 
 # python
 pyenv 2.4.19
@@ -55,7 +66,14 @@ $ pip install -r requirements.txt
 ```
 $ cp .env.sample .env
 ```
-秘密鍵はtypescript側で生成したものと同じでも問題ない
+
+## 環境変数に必要なアカウント  
+秘密鍵はtypescript側で生成したものと同じでも問題ありませんが  
+pythonのコードで生成する場合は以下の通りです  
+
+```
+$ python src/utils/generate_account.py
+```
 
 ## 実行方法
 ```
@@ -63,5 +81,15 @@ $ python [ファイル名]
 ```
 例
 ```
-$ python 1_transaction.py
+$ python src/1_transaction.py
 ```
+
+## python一括実行
+pythonのすべてのコードを実行したい場合は以下スクリプトを実行します。
+```
+mac
+$ scripts/run-all.sh
+windows
+$ scripts/run-all.bat
+```
+実行結果はコンソール上に表示、およびscripts/logディレクトリにログとして生成されます。

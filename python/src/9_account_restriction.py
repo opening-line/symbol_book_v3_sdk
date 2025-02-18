@@ -1,6 +1,5 @@
 # アカウントに対する制限を設定するコード
 import os
-import sys
 import requests
 import asyncio
 from dotenv import load_dotenv
@@ -11,31 +10,25 @@ from symbolchain.facade.SymbolFacade import (
   Hash256,
 )
 from symbolchain.sc import (
-  Amount,
-  Signature,
   AccountRestrictionFlags,
   TransactionType,
   UnresolvedMosaicId,
   TransferTransactionV1,
-  AggregateCompleteTransactionV2,
   AccountAddressRestrictionTransactionV1,
   AccountMosaicRestrictionTransactionV1,
   AccountOperationRestrictionTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
+  send_transaction,
+  send_transfer_fees
 )
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -66,101 +59,18 @@ async def main() -> None:
     "Restricted Account 3 Address:", restricted_account3.address
   )
 
-  # 転送トランザクション1
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_1: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account1.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
-
-  # 転送トランザクション2
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_2: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account2.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
-
-  # 転送トランザクション3
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_3: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account3.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
-
-  txs_pre = [
-    transfer_tx_pre_1,
-    transfer_tx_pre_2,
-    transfer_tx_pre_3,
+  fee_amount = 1000000  # 1xym
+  recipient_addresses = [
+    restricted_account1.address,
+    restricted_account2.address,
+    restricted_account3.address    
   ]
 
-  inner_transaction_hash_pre: Hash256 = (
-    facade.hash_embedded_transactions(txs_pre)
-  )
-
-  tx_pre: (
-    AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
-      "type": "aggregate_complete_transaction_v2",
-      "transactions": txs_pre,
-      "transactions_hash": inner_transaction_hash_pre,
-      "signer_public_key": account_a.public_key,
-      "deadline": deadline_timestamp,
-    }
-  )
-  tx_pre.fee = Amount(100 * tx_pre.size)
-
-  signature_pre: Signature = account_a.sign_transaction(tx_pre)
-
-  json_payload_pre = facade.transaction_factory.attach_signature(
-    tx_pre, signature_pre
-  )
-
-  response_pre = requests.put(
-    f"{NODE_URL}/transactions",
-    headers={"Content-Type": "application/json"},
-    data=json_payload_pre,
-  ).json()
-
-  print("Response:", response_pre)
-
-  hash_pre: Hash256 = facade.hash_transaction(tx_pre)
-
   print("===事前手数料転送トランザクション===")
-  await await_transaction_status(
+  # 手数料を送付するトランザクションを生成、署名、アナウンス
+  hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
+
+  await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -174,8 +84,7 @@ async def main() -> None:
   # アカウント制限トランザクション
   tx_rr1: (
     AccountAddressRestrictionTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "account_address_restriction_transaction_v1",
       # フラグの指定
       "restriction_flags": block_incoming_address_flag_value,
@@ -186,13 +95,12 @@ async def main() -> None:
       # 署名者の公開鍵
       "signer_public_key": restricted_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_rr1: Hash256 = send_transaction(tx_rr1, restricted_account1)
+    })
 
   print("===アカウント受信禁止トランザクション===")
-  await await_transaction_status(
+  hash_rr1: Hash256 = send_transaction(tx_rr1, restricted_account1)
+
+  await wait_transaction_status(
     str(hash_rr1), NODE_URL, "confirmed"
   )
 
@@ -200,21 +108,20 @@ async def main() -> None:
   # 制限がかかりエラーになることを確認する
   tx_tf1: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": restricted_account1.address,
       "mosaics": [],
       "message": b"\0Hello, restrictedAccount1!",
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_tf1: Hash256 = send_transaction(tx_tf1, account_a)
+    })
 
   print("===確認用アカウント受信禁止トランザクション===")
-  await await_transaction_status(
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
+  hash_tf1: Hash256 = send_transaction(tx_tf1, account_a)
+
+  await wait_transaction_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
 
@@ -228,8 +135,7 @@ async def main() -> None:
   # アカウント制限トランザクション
   tx_rr2: (
     AccountMosaicRestrictionTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "account_mosaic_restriction_transaction_v1",
       "restriction_flags": block_mosaic_flags_value,  # フラグの指定
       "restriction_additions": [
@@ -239,13 +145,12 @@ async def main() -> None:
       # 署名者の公開鍵
       "signer_public_key": restricted_account2.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_rr2: Hash256 = send_transaction(tx_rr2, restricted_account2)
+    })
 
   print("===モザイク受信禁止トランザクション===")
-  await await_transaction_status(
+  hash_rr2: Hash256 = send_transaction(tx_rr2, restricted_account2)
+
+  await wait_transaction_status(
     str(hash_rr2), NODE_URL, "confirmed"
   )
 
@@ -253,8 +158,7 @@ async def main() -> None:
   # 制限がかかりエラーになることを確認する
   tx_tf2: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": restricted_account2.address,
       "mosaics": [
@@ -265,13 +169,13 @@ async def main() -> None:
       ],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_tf2: Hash256 = send_transaction(tx_tf2, account_a)
+    })
 
   print("===確認用モザイク受信禁止トランザクション===")
-  await await_transaction_status(
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
+  hash_tf2: Hash256 = send_transaction(tx_tf2, account_a)
+
+  await wait_transaction_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )
 
@@ -286,8 +190,7 @@ async def main() -> None:
   # トランザクション制限トランザクション
   tx_rr3: (
     AccountOperationRestrictionTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "account_operation_restriction_transaction_v1",
       # フラグの指定
       "restriction_flags": accountOperationRestrictionFlagsValue,
@@ -298,13 +201,12 @@ async def main() -> None:
       # 署名者の公開鍵
       "signer_public_key": restricted_account3.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_rr3: Hash256 = send_transaction(tx_rr3, restricted_account3)
+    })
 
   print("===トランザクション送信禁止トランザクション===")
-  await await_transaction_status(
+  hash_rr3: Hash256 = send_transaction(tx_rr3, restricted_account3)
+
+  await wait_transaction_status(
     str(hash_rr3), NODE_URL, "confirmed"
   )
 
@@ -312,8 +214,7 @@ async def main() -> None:
   # 制限がかかりエラーになることを確認する
   tx_tf3: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": account_a.address,
       "mosaics": [],
@@ -321,13 +222,13 @@ async def main() -> None:
       # 署名者の公開鍵
       "signer_public_key": restricted_account3.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_tf3: Hash256 = send_transaction(tx_tf3, restricted_account3)
+    })
 
   print("===確認用トランザクション送信禁止トランザクション===")
-  await await_transaction_status(
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
+  hash_tf3: Hash256 = send_transaction(tx_tf3, restricted_account3)
+
+  await wait_transaction_status(
     str(hash_tf3), NODE_URL, "confirmed"
   )
 

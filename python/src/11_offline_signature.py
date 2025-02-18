@@ -1,6 +1,5 @@
 # オフライン（オフチェーン）上で署名を集めるコード
 import os
-import sys
 import json
 import requests
 import asyncio
@@ -19,19 +18,15 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.await_transaction_status import (
-  await_transaction_status,
+from functions import (
+  wait_transaction_status,
 )
 from binascii import unhexlify
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -54,28 +49,24 @@ async def main() -> None:
   # 転送トランザクション1(accountA=>accountB)
   transfer_tx1: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_b.address,
       "mosaics": [],
       "message": b"\0Hello, accountB",
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # 転送トランザクション2(accountA=>accountB)
   transfer_tx2: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_a.address,
       "mosaics": [],
       "message": b"\0Hello, accountA!",
       "signer_public_key": account_b.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [transfer_tx1, transfer_tx2]
 
@@ -83,18 +74,16 @@ async def main() -> None:
     facade.hash_embedded_transactions(txs)
   )
 
-  # アグリゲート本デッドトランザクションを生成
+  # アグリゲートボンデッドトランザクションを生成
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(
     100 * (tx_agg.size + 1 * 104)
   )  # 連署者の署名分のサイズ （連署者 ＊ 104）を追加
@@ -104,18 +93,24 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("署名済みペイロード生成…")
+
   # ペイロードをJSON形式に変換
   payloadAgg = str(json.loads(json_payload_agg)["payload"])
+
+  print("ペイロード",payloadAgg)
 
   # メール等何かの方法（オフライン）でpayloadAggを送る
   # ここでは、payloadAggを表示することで確認する
 
   # ペイロードからTxの復元
+  print("ペイロードからTxの復元実施…")
   restored_tx_agg = AggregateCompleteTransactionV2.deserialize(
     unhexlify(payloadAgg)
   )
 
   # 検証を行い、改ざんされていないことを確認する
+  print("署名の検証実施…")
   response_verify = facade.verify_transaction(
     restored_tx_agg,
     restored_tx_agg.signature,
@@ -123,34 +118,36 @@ async def main() -> None:
 
   if not response_verify:
     raise Exception("署名の検証に失敗しました。")
+  
+  print("署名の検証に成功しました。")  
 
   cosignB: Cosignature = account_b.cosign_transaction(
     restored_tx_agg
   )
 
   # 連署者の署名追加
+  print("オフライン署名の実施…")  
   restored_tx_agg.cosignatures.append(cosignB)
 
-  json_payload_restored_tx_agg = json.dumps(
-    {
+  json_payload_restored_tx_agg = json.dumps({
       "payload": (restored_tx_agg.serialize()).hex(),
-    }
-  )
+    })
 
+  print("===オフライン署名したトランザクションのアナウンス===")
+  print("アナウンス開始")  
   response_restored_tx_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_restored_tx_agg,
   ).json()
 
-  print("Response:", response_restored_tx_agg)
+  print("アナウンス結果", response_restored_tx_agg)
 
   hash__restored_tx_agg: Hash256 = facade.hash_transaction(
     restored_tx_agg
   )
 
-  print("===オフライン署名したトランザクションのアナウンス===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash__restored_tx_agg), NODE_URL, "confirmed"
   )
 

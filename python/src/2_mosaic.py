@@ -1,6 +1,5 @@
 # モザイクを生成し送付するコード
 import os
-import sys
 import json
 import random
 import requests
@@ -24,21 +23,15 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
+  wait_transaction_status,
 )
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -68,8 +61,7 @@ async def main() -> None:
   # モザイク定義トランザクション
   mosaic_definition_tx: (
     MosaicDefinitionTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_definition_transaction_v1",
       "id": mosaic_id,  # モザイクID
       "duration": 0,  # 有効期限
@@ -77,27 +69,23 @@ async def main() -> None:
       "flags": mosaic_flags_value,  # モザイク定義用のフラグ
       "divisibility": 0,  # 可分性 小数点以下の桁数
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # モザイク供給量変更トランザクション
   mosaic_supply_change_tx: (
     MosaicSupplyChangeTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_supply_change_transaction_v1",
       "mosaic_id": mosaic_id,  # モザイクID
       "delta": 100,  # 供給量
       "action": "increase",  # 増やす(increase)減らす(decrease)
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # 転送トランザクション
   transfer_tx: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_b.address,  # 送信先アカウントのアドレス
       "mosaics": [
@@ -107,8 +95,7 @@ async def main() -> None:
         }
       ],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [mosaic_definition_tx, mosaic_supply_change_tx, transfer_tx]
 
@@ -120,8 +107,7 @@ async def main() -> None:
   # アグリゲートトランザクションを生成
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,  # インナートランザクションを指定
       # インナートランザクションのハッシュを指定
@@ -129,8 +115,7 @@ async def main() -> None:
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       # 有効期限はアグリゲートトランザクション側で指定する
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(100 * tx_agg.size)
 
   signature_agg: Signature = account_a.sign_transaction(tx_agg)
@@ -140,26 +125,28 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("===モザイク発行及び転送トランザクション===")
   # ノードにアナウンスを行う
+  print("アナウンス開始")  
   response_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_agg,
   ).json()
 
-  print("Response:", response_agg)
+  print("アナウンス結果", response_agg)
 
   # トランザクションハッシュの生成
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
-  print("===モザイク発行及び転送トランザクション===")
-
   # トランザクションの状態を確認する処理を関数化
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 
   # モザイク情報を取得する
+  await asyncio.sleep(5) # モザイクが生成されるまでの時差があるため数秒程度待つ
+
   mosaic_id_hex = hex(mosaic_id)[2:]  # '0x'を除去
   mosaic_info = requests.get(
     f"{NODE_URL}/mosaics/{mosaic_id_hex}",
@@ -167,6 +154,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "モザイク情報JSON表示",    
     json.dumps(
       convert_hex_values_in_object(mosaic_info), indent=2
     )

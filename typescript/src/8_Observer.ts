@@ -3,13 +3,14 @@ import { PrivateKey } from "symbol-sdk"
 import { Network, SymbolFacade, descriptors } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
+import {
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
+} from "./functions"
+
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -25,7 +26,7 @@ const initializeWebSocket = async () => {
   // WebSocketに接続した時の処理
   ws.addEventListener("open", async () => {    
     // 接続時のレスポンスからUIDを取得
-    const response = await new Promise((resolve) => {
+    const uid = await new Promise((resolve) => {
       ws.addEventListener("message", (event: MessageEvent) => {
         const message = JSON.parse(event.data)
         if (message.uid) {
@@ -44,11 +45,11 @@ const initializeWebSocket = async () => {
     // チャンネル購読
     ws.send(
       JSON.stringify(
-        { uid: response, subscribe: confirmedChannelName }
+        { uid: uid, subscribe: confirmedChannelName }
       ))
     ws.send(
       JSON.stringify(
-        { uid: response, subscribe: unconfirmedChannelName }
+        { uid: uid, subscribe: unconfirmedChannelName }
       ))
   })
 
@@ -62,10 +63,12 @@ const initializeWebSocket = async () => {
     if (topic.startsWith("confirmedAdded")) {
       console.log("承認トランザクション検知:", tx)
       const hash = tx.meta.hash
-      console.log(
-        "結果 Success",
-        "エクスプローラー ",
-        `https://testnet.symbol.fyi/transactions/${hash}`)
+      const height = tx.meta.height      
+      console.log("トランザクションハッシュ",hash)
+      console.log("ブロック高",height)
+      console.log("Symbolエクスプローラー ",
+        `https://testnet.symbol.fyi/transactions/${hash}`,
+      )        
       ws.close()
     }
     // 未承認済みトランザクションを検知した時の処理

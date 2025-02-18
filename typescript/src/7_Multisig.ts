@@ -30,19 +30,19 @@ console.log(
   multisigAccount.address.toString(),
 )
 console.log(
-  "Cosign Account 1 Address:",
+  "Cosig Account 1 Address:",
   cosigAccount1.address.toString(),
 )
 console.log(
-  "Cosign Account 2 Address:",
+  "Cosig Account 2 Address:",
   cosigAccount2.address.toString(),
 )
 console.log(
-  "Cosign Account 3 Address:",
+  "Cosig Account 3 Address:",
   cosigAccount3.address.toString(),
 )
 console.log(
-  "Cosign Account 4 Address:",
+  "Cosig Account 4 Address:",
   cosigAccount4.address.toString(),
 )
 
@@ -146,7 +146,7 @@ const multisigAccountModificationDescriptor =
     [], // 除名するアカウントのアドレスリスト
   )
 
-const innerTransactionsMod = [
+const innerTxsModification = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
     multisigAccountModificationDescriptor,
     multisigAccount.publicKey, // マルチシグ化するアカウントの公開鍵を指定
@@ -154,13 +154,13 @@ const innerTransactionsMod = [
 ]
 
 const innerTransactionHashMod = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsMod,
+  innerTxsModification,
 )
 
 const aggregateDescriptorMod =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
     innerTransactionHashMod,
-    innerTransactionsMod,
+    innerTxsModification,
   )
 
 const txMod = models.AggregateCompleteTransactionV2.deserialize(
@@ -221,7 +221,7 @@ const transferDescriptor =
     "\0Hello accountA From Multisig Account!",
   )
 
-const innerTransactionsTf = [
+const innerTxsTranfer = [
   facade.createEmbeddedTransactionFromTypedDescriptor(
     transferDescriptor,
     multisigAccount.publicKey,
@@ -229,13 +229,13 @@ const innerTransactionsTf = [
 ]
 
 const innerTransactionHashTf = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsTf,
+  innerTxsTranfer,
 )
 
 const aggregateDescriptorTf =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
     innerTransactionHashTf,
-    innerTransactionsTf,
+    innerTxsTranfer,
   )
 
 const txTf = models.AggregateCompleteTransactionV2.deserialize(
@@ -254,16 +254,16 @@ const signatureTf = cosigAccount1.signTransaction(txTf)
 
 facade.transactionFactory.static.attachSignature(txTf, signatureTf)
 
-const cosign2Tf = facade.cosignTransaction(
+const cosig2Tf = facade.cosignTransaction(
   cosigAccount2.keyPair,
   txTf,
 )
-txTf.cosignatures.push(cosign2Tf)
-const cosign3Tf = facade.cosignTransaction(
+txTf.cosignatures.push(cosig2Tf)
+const cosig3Tf = facade.cosignTransaction(
   cosigAccount3.keyPair,
   txTf,
 )
-txTf.cosignatures.push(cosign3Tf)
+txTf.cosignatures.push(cosig3Tf)
 
 const jsonPayloadTf = JSON.stringify({
   payload: utils.uint8ToHex(txTf.serialize()),

@@ -1,6 +1,5 @@
 # トランザクションを生成するコード
 import os
-import sys
 import json
 import time
 import requests
@@ -12,22 +11,16 @@ from symbolchain.facade.SymbolFacade import (
   Hash256,
 )
 from symbolchain.sc import Amount, Signature, TransferTransactionV1
-
-# プロジェクトのルートディレクトリをパスに追加
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
 )
-
 
 def main() -> None:
   # dotenvの設定
   load_dotenv()
 
   # Symbolへ接続するためのノードを指定
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   # 秘密鍵からのアカウント復元

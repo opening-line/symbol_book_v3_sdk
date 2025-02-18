@@ -93,18 +93,24 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("署名済みペイロード生成…")
+
   # ペイロードをJSON形式に変換
   payloadAgg = str(json.loads(json_payload_agg)["payload"])
+
+  print("ペイロード",payloadAgg)
 
   # メール等何かの方法（オフライン）でpayloadAggを送る
   # ここでは、payloadAggを表示することで確認する
 
   # ペイロードからTxの復元
+  print("ペイロードからTxの復元実施…")
   restored_tx_agg = AggregateCompleteTransactionV2.deserialize(
     unhexlify(payloadAgg)
   )
 
   # 検証を行い、改ざんされていないことを確認する
+  print("署名の検証実施…")
   response_verify = facade.verify_transaction(
     restored_tx_agg,
     restored_tx_agg.signature,
@@ -112,12 +118,15 @@ async def main() -> None:
 
   if not response_verify:
     raise Exception("署名の検証に失敗しました。")
+  
+  print("署名の検証に成功しました。")  
 
   cosignB: Cosignature = account_b.cosign_transaction(
     restored_tx_agg
   )
 
   # 連署者の署名追加
+  print("オフライン署名の実施…")  
   restored_tx_agg.cosignatures.append(cosignB)
 
   json_payload_restored_tx_agg = json.dumps({

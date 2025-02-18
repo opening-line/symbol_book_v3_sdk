@@ -12,6 +12,7 @@ import {
   waitTransactionStatus,
   createAndSendTransaction,
 } from "./functions"
+import { sendTransferFees } from "./functions/sendTransferFees"
 
 dotenv.config()
 
@@ -38,101 +39,16 @@ console.log(
   restrictedAccount3.address.toString(),
 )
 
-// 転送トランザクション1
-// （アカウント制限に必要な手数料を送付）
-const transferDescriptorPre1 =
-  new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount1.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(1000000n), // 1xym
-      ),
-    ],
-  )
+const feeAmount = 1000000n; // 1xym
+const recipientAddresses = [
+  restrictedAccount1.address,
+  restrictedAccount2.address,
+  restrictedAccount3.address
+];
 
-// 転送トランザクション2
-// （アカウント制限に必要な手数料を送付）
-const transferDescriptorPre2 =
-  new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount2.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(1000000n), // 1xym
-      ),
-    ],
-  )
-
-// 転送トランザクション3
-// （アカウント制限に必要な手数料を送付）
-const transferDescriptorPre3 =
-  new descriptors.TransferTransactionV1Descriptor(
-    restrictedAccount3.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(1000000n), // 1xym
-      ),
-    ],
-  )
-
-const txsPre = [
-  {
-    transaction: transferDescriptorPre1,
-    signer: accountA.publicKey,
-  },
-  {
-    transaction: transferDescriptorPre2,
-    signer: accountA.publicKey,
-  },
-  {
-    transaction: transferDescriptorPre3,
-    signer: accountA.publicKey,
-  },
-]
-
-const innerTransactionsPre = txsPre.map((tx) =>
-  facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
-  ),
-)
-
-const innerTransactionHashPre = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsPre,
-)
-
-const aggregateDescriptorPre =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
-    innerTransactionHashPre,
-    innerTransactionsPre,
-  )
-
-const txPre = facade.createTransactionFromTypedDescriptor(
-  aggregateDescriptorPre,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
-)
-
-const signaturePre = accountA.signTransaction(txPre)
-const jsonPayloadPre =
-  facade.transactionFactory.static.attachSignature(
-    txPre,
-    signaturePre,
-  )
-
-console.log("===事前手数料転送トランザクション===")
-const responsePre = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadPre,
-}).then((res) => res.json())
-
-console.log("アナウンス結果", responsePre)
-
-const hashPre = facade.hashTransaction(txPre)
+console.log("===事前手数料転送トランザクション===");
+// 手数料を送付するトランザクションを生成、署名、アナウンス
+const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
 await waitTransactionStatus(
   hashPre.toString(),
@@ -155,7 +71,7 @@ const accountAddressRestrictionDescriptor =
     [
       accountA.address, // 対象アドレスリスト（署名するアカウントではない事に注意）
     ],
-    [], // 解除対象アドレスリスç
+    [], // 解除対象アドレスリスト
   )
 
 console.log("===アカウント受信禁止トランザクション===")
@@ -180,6 +96,7 @@ const transferDescriptor1 =
   )
 
 console.log("===確認用アカウント受信禁止トランザクション===")
+console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   accountA,
@@ -234,6 +151,7 @@ const transferDescriptor2 =
   )
 
 console.log("===確認用モザイク受信禁止トランザクション===")
+console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   accountA,
@@ -287,6 +205,7 @@ const transferDescriptor3 =
   )
   
 console.log("===確認用トランザクション送信禁止トランザクション===")
+console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
 const hashTf3 = await createAndSendTransaction(
   transferDescriptor3,
   restrictedAccount3,

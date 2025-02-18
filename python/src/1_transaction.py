@@ -109,6 +109,7 @@ def main() -> None:
     raise Exception("トランザクションが確認されませんでした。")
 
   # トランザクション情報を取得する
+  print("トランザクション情報を取得中・・・")
   tx_info = requests.get(
     f"{NODE_URL}/transactions/confirmed/{str(hash)}",
     headers={"Content-Type": "application/json"},
@@ -122,6 +123,7 @@ def main() -> None:
   # アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
   # メッセージはバイトに変換し、UTF-8形式でデコード。
   # 16進数のアドレスとメッセージを変換する処理を関数化
+  print("変換したデータを表示")  
   print("トランザクション情報JSON表示",
     json.dumps(convert_hex_values_in_object(tx_info), indent=2))
 

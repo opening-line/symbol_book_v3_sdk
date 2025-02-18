@@ -4,7 +4,10 @@ import {
   SymbolFacade,
 } from "symbol-sdk/symbol"
 import type { Hash256 } from "symbol-sdk"
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+import dotenv from "dotenv"
+
+dotenv.config()
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 
 //descriptorからトランザクションの生成、署名、アナウンスを行う関数

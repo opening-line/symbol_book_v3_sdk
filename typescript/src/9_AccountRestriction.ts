@@ -8,16 +8,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -136,7 +134,7 @@ console.log({ responsePre })
 const hashPre = facade.hashTransaction(txPre)
 
 console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -166,7 +164,7 @@ const hashRr1 = await createAndSendTransaction(
 )
 
 console.log("===アカウント受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr1.toString(),
   NODE_URL,
   "confirmed",
@@ -187,7 +185,7 @@ const hashTf1 = await createAndSendTransaction(
 )
 
 console.log("===確認用アカウント受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
   "confirmed",
@@ -216,7 +214,7 @@ const hashRr2 = await createAndSendTransaction(
 )
 
 console.log("===モザイク受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr2.toString(),
   NODE_URL,
   "confirmed",
@@ -241,7 +239,7 @@ const hashTf2 = await createAndSendTransaction(
 )
 
 console.log("===確認用モザイク受信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,
   "confirmed",
@@ -273,7 +271,7 @@ const hashRr3 = await createAndSendTransaction(
 )
 
 console.log("===トランザクション送信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashRr3.toString(),
   NODE_URL,
   "confirmed",
@@ -294,7 +292,7 @@ const hashTf3 = await createAndSendTransaction(
 )
 
 console.log("===確認用トランザクション送信禁止トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf3.toString(),
   NODE_URL,
   "confirmed",

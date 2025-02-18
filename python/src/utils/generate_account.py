@@ -5,7 +5,6 @@ from symbolchain.facade.SymbolFacade import (
   SymbolAccount,
 )
 
-
 def main() -> None:
   facade: SymbolFacade = SymbolFacade(
     "testnet"

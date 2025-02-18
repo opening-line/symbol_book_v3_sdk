@@ -1,6 +1,5 @@
 # アカウントに対する制限を設定するコード
 import os
-import sys
 import requests
 import asyncio
 from dotenv import load_dotenv
@@ -23,19 +22,15 @@ from symbolchain.sc import (
   AccountOperationRestrictionTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
+  send_transaction,
 )
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -160,7 +155,7 @@ async def main() -> None:
   hash_pre: Hash256 = facade.hash_transaction(tx_pre)
 
   print("===事前手数料転送トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -192,7 +187,7 @@ async def main() -> None:
   hash_rr1: Hash256 = send_transaction(tx_rr1, restricted_account1)
 
   print("===アカウント受信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_rr1), NODE_URL, "confirmed"
   )
 
@@ -214,7 +209,7 @@ async def main() -> None:
   hash_tf1: Hash256 = send_transaction(tx_tf1, account_a)
 
   print("===確認用アカウント受信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
 
@@ -245,7 +240,7 @@ async def main() -> None:
   hash_rr2: Hash256 = send_transaction(tx_rr2, restricted_account2)
 
   print("===モザイク受信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_rr2), NODE_URL, "confirmed"
   )
 
@@ -271,7 +266,7 @@ async def main() -> None:
   hash_tf2: Hash256 = send_transaction(tx_tf2, account_a)
 
   print("===確認用モザイク受信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )
 
@@ -304,7 +299,7 @@ async def main() -> None:
   hash_rr3: Hash256 = send_transaction(tx_rr3, restricted_account3)
 
   print("===トランザクション送信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_rr3), NODE_URL, "confirmed"
   )
 
@@ -327,7 +322,7 @@ async def main() -> None:
   hash_tf3: Hash256 = send_transaction(tx_tf3, restricted_account3)
 
   print("===確認用トランザクション送信禁止トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf3), NODE_URL, "confirmed"
   )
 

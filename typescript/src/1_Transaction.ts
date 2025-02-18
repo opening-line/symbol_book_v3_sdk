@@ -7,15 +7,15 @@ import {
   models,
 } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
-import { 
-  convertHexValuesInObject,
-} from "../functions/convertHexValuesInObject"
+import {
+  convertHexValuesInObject
+} from "./functions"
 
 // dotenvの設定
 dotenv.config()
 
 //Symbolへ接続するためのノードを指定
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 //秘密鍵からのアカウント復元
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)

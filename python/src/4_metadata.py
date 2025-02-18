@@ -1,6 +1,5 @@
 # メタデータをアカウントに紐づけるコード
 import os
-import sys
 import json
 import dotenv
 import requests
@@ -22,21 +21,15 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
+  wait_transaction_status,
 )
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   dotenv.load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -113,7 +106,7 @@ async def main() -> None:
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
   print("===アカウントメタデータトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 

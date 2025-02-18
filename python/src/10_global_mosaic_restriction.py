@@ -1,6 +1,5 @@
 # モザイクに対する制限（グローバルモザイク制限）を設定するコード
 import os
-import sys
 import random
 import requests
 import asyncio
@@ -27,19 +26,15 @@ from symbolchain.sc import (
   MosaicAddressRestrictionTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  wait_transaction_status,
+  send_transaction,
 )
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -88,7 +83,7 @@ async def main() -> None:
   hash_pre: Hash256 = send_transaction(tx_pre, account_a)
 
   print("===事前手数料転送トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -195,7 +190,7 @@ async def main() -> None:
 
   print("===制限付きモザイク発行及び転送トランザクション===")
 
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_gmr), NODE_URL, "confirmed"
   )
 
@@ -276,7 +271,7 @@ async def main() -> None:
 
   print("===制限付きモザイクの送受信許可トランザクション===")
 
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_Mar), NODE_URL, "confirmed"
   )
 
@@ -296,7 +291,7 @@ async def main() -> None:
   hash_tf1: Hash256 = send_transaction(tx_tf1, allowed_account1)
 
   print("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
 
@@ -317,7 +312,7 @@ async def main() -> None:
   hash_tf2: Hash256 = send_transaction(tx_tf2, allowed_account1)
 
   print("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )
 

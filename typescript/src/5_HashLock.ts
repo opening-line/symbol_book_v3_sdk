@@ -8,17 +8,15 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
-import { convertHexValuesInObject } from "../functions/convertHexValuesInObject"
+  convertHexValuesInObject
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -109,7 +107,7 @@ const hashLock = await createAndSendTransaction(
 )
 
 console.log("===ハッシュロックトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -133,7 +131,7 @@ console.log({ responseAgg })
 
 // partial（オンチェーン上で連署待ちの状態）の確認
 console.log("===アグリゲートボンデッドトランザクション===")
-await awaitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
+await waitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
 
 // アカウントBが連署を必要とするトランザクションを検出する処理
 const query = new URLSearchParams({
@@ -177,4 +175,4 @@ const responseCos = await fetch(
 console.log({ responseCos })
 
 console.log("===アグリゲートボンデッドトランザクションへの連署===")
-await awaitTransactionStatus(hashAggString, NODE_URL, "confirmed")
+await waitTransactionStatus(hashAggString, NODE_URL, "confirmed")

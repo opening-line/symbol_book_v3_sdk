@@ -110,15 +110,15 @@ const signatureMod = multisigAccount.signTransaction(txMod)
 facade.transactionFactory.static.attachSignature(txMod, signatureMod)
 
 //マルチシグ構成アカウントの連署
-const cosign1 = facade.cosignTransaction(cosigAccount1.keyPair, txMod)
+const cosig1 = facade.cosignTransaction(cosigAccount1.keyPair, txMod)
 //連署者の署名追加
-txMod.cosignatures.push(cosign1)
-const cosign2 = facade.cosignTransaction(cosigAccount2.keyPair, txMod)
-txMod.cosignatures.push(cosign2)
-const cosign3 = facade.cosignTransaction(cosigAccount3.keyPair, txMod)
-txMod.cosignatures.push(cosign3)
-const cosign4 = facade.cosignTransaction(cosigAccount4.keyPair, txMod)
-txMod.cosignatures.push(cosign4)
+txMod.cosignatures.push(cosig1)
+const cosig2 = facade.cosignTransaction(cosigAccount2.keyPair, txMod)
+txMod.cosignatures.push(cosig2)
+const cosig3 = facade.cosignTransaction(cosigAccount3.keyPair, txMod)
+txMod.cosignatures.push(cosig3)
+const cosig4 = facade.cosignTransaction(cosigAccount4.keyPair, txMod)
+txMod.cosignatures.push(cosig4)
 
 //トランザクションをペイロード化 => 文字列に整形
 const jsonPayloadMod = JSON.stringify({

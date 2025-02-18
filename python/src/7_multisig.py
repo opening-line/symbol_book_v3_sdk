@@ -21,6 +21,7 @@ from symbolchain.sc import (
 
 from functions import (
   wait_transaction_status,
+  send_transfer_fees
 )
 
 async def main() -> None:
@@ -50,77 +51,17 @@ async def main() -> None:
   cosig_account4 = facade.create_account(PrivateKey.random())
 
   print("Multisig Account Address:", multisig_account.address)
-  print("Cosign Account 1 Address:", cosig_account1.address)
-  print("Cosign Account 2 Address:", cosig_account2.address)
-  print("Cosign Account 3 Address:", cosig_account3.address)
-  print("Cosign Account 4 Address:", cosig_account4.address)
+  print("Cosig Account 1 Address:", cosig_account1.address)
+  print("Cosig Account 2 Address:", cosig_account2.address)
+  print("Cosig Account 3 Address:", cosig_account3.address)
+  print("Cosig Account 4 Address:", cosig_account4.address)
 
-  # 転送トランザクション1
-  # （マルチシグアカウントを構成する際に必要な手数料を送付）
-  transfer_tx_pre_1: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded({
-      "type": "transfer_transaction_v1",
-      "recipient_address": multisig_account.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    })
-
-  # 転送トランザクション2
-  # （マルチシグアカウントに対してトランザクションを起案する手数料を送付）
-  transfer_tx_pre_2: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded({
-      "type": "transfer_transaction_v1",
-      "recipient_address": cosig_account1.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    })
-
-  txs_pre = [transfer_tx_pre_1, transfer_tx_pre_2]
-
-  inner_transaction_hash_pre: Hash256 = (
-    facade.hash_embedded_transactions(txs_pre)
-  )
-
-  tx_pre: (
-    AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
-      "transactions": txs_pre,
-      "transactions_hash": inner_transaction_hash_pre,
-      "signer_public_key": account_a.public_key,
-      "deadline": deadline_timestamp,
-    })
-  tx_pre.fee = Amount(100 * tx_pre.size)
-
-  signature_pre: Signature = account_a.sign_transaction(tx_pre)
-
-  json_payload_pre = facade.transaction_factory.attach_signature(
-    tx_pre, signature_pre
-  )
+  fee_amount = 1000000  # 1xym
+  recipient_addresses = [multisig_account.address, cosig_account1.address]
 
   print("===事前手数料転送トランザクション===")
-  print("アナウンス開始")
-  response_pre = requests.put(
-    f"{NODE_URL}/transactions",
-    headers={"Content-Type": "application/json"},
-    data=json_payload_pre,
-  ).json()
-
-  print("アナウンス結果", response_pre)
-
-  hash_pre: Hash256 = facade.hash_transaction(tx_pre)
+  # 手数料を送付するトランザクションを生成、署名、アナウンス
+  hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
   await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
@@ -172,15 +113,15 @@ async def main() -> None:
   facade.transaction_factory.attach_signature(tx_mod, signature_mod)
 
   # マルチシグ構成アカウントの連署
-  cosign1: Cosignature = cosig_account1.cosign_transaction(tx_mod)
+  cosig1: Cosignature = cosig_account1.cosign_transaction(tx_mod)
   # 連署者の署名追加
-  tx_mod.cosignatures.append(cosign1)
-  cosign2: Cosignature = cosig_account2.cosign_transaction(tx_mod)
-  tx_mod.cosignatures.append(cosign2)
-  cosign3: Cosignature = cosig_account3.cosign_transaction(tx_mod)
-  tx_mod.cosignatures.append(cosign3)
-  cosign4: Cosignature = cosig_account4.cosign_transaction(tx_mod)
-  tx_mod.cosignatures.append(cosign4)
+  tx_mod.cosignatures.append(cosig1)
+  cosig2: Cosignature = cosig_account2.cosign_transaction(tx_mod)
+  tx_mod.cosignatures.append(cosig2)
+  cosig3: Cosignature = cosig_account3.cosign_transaction(tx_mod)
+  tx_mod.cosignatures.append(cosig3)
+  cosig4: Cosignature = cosig_account4.cosign_transaction(tx_mod)
+  tx_mod.cosignatures.append(cosig4)
 
   # トランザクションをペイロード化 => 文字列に整形
   json_payload_mod = json.dumps({
@@ -239,10 +180,10 @@ async def main() -> None:
   # 署名の付与
   facade.transaction_factory.attach_signature(tx_tf, signature_tf)
 
-  cosign2_tf: Cosignature = cosig_account2.cosign_transaction(tx_tf)
-  tx_tf.cosignatures.append(cosign2_tf)
-  cosign3_tf: Cosignature = cosig_account3.cosign_transaction(tx_tf)
-  tx_tf.cosignatures.append(cosign3_tf)
+  cosig2_tf: Cosignature = cosig_account2.cosign_transaction(tx_tf)
+  tx_tf.cosignatures.append(cosig2_tf)
+  cosig3_tf: Cosignature = cosig_account3.cosign_transaction(tx_tf)
+  tx_tf.cosignatures.append(cosig3_tf)
 
   json_payload_tf = json.dumps({
       "payload": (tx_tf.serialize()).hex(),

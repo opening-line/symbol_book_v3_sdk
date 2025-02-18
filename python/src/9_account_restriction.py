@@ -10,13 +10,10 @@ from symbolchain.facade.SymbolFacade import (
   Hash256,
 )
 from symbolchain.sc import (
-  Amount,
-  Signature,
   AccountRestrictionFlags,
   TransactionType,
   UnresolvedMosaicId,
   TransferTransactionV1,
-  AggregateCompleteTransactionV2,
   AccountAddressRestrictionTransactionV1,
   AccountMosaicRestrictionTransactionV1,
   AccountOperationRestrictionTransactionV1,
@@ -25,6 +22,7 @@ from symbolchain.sc import (
 from functions import (
   wait_transaction_status,
   send_transaction,
+  send_transfer_fees
 )
 
 async def main() -> None:
@@ -61,92 +59,16 @@ async def main() -> None:
     "Restricted Account 3 Address:", restricted_account3.address
   )
 
-  # 転送トランザクション1
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_1: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded({
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account1.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    })
-
-  # 転送トランザクション2
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_2: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded({
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account2.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    })
-
-  # 転送トランザクション3
-  # （アカウント制限に必要な手数料を送付）
-  transfer_tx_pre_3: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded({
-      "type": "transfer_transaction_v1",
-      "recipient_address": restricted_account3.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    })
-
-  txs_pre = [
-    transfer_tx_pre_1,
-    transfer_tx_pre_2,
-    transfer_tx_pre_3,
+  fee_amount = 1000000  # 1xym
+  recipient_addresses = [
+    restricted_account1.address,
+    restricted_account2.address,
+    restricted_account3.address    
   ]
 
-  inner_transaction_hash_pre: Hash256 = (
-    facade.hash_embedded_transactions(txs_pre)
-  )
-
-  tx_pre: (
-    AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
-      "transactions": txs_pre,
-      "transactions_hash": inner_transaction_hash_pre,
-      "signer_public_key": account_a.public_key,
-      "deadline": deadline_timestamp,
-    })
-  tx_pre.fee = Amount(100 * tx_pre.size)
-
-  signature_pre: Signature = account_a.sign_transaction(tx_pre)
-
-  json_payload_pre = facade.transaction_factory.attach_signature(
-    tx_pre, signature_pre
-  )
-
   print("===事前手数料転送トランザクション===")
-  print("アナウンス開始")  
-  response_pre = requests.put(
-    f"{NODE_URL}/transactions",
-    headers={"Content-Type": "application/json"},
-    data=json_payload_pre,
-  ).json()
-
-  print("アナウンス結果", response_pre)
-
-  hash_pre: Hash256 = facade.hash_transaction(tx_pre)
+  # 手数料を送付するトランザクションを生成、署名、アナウンス
+  hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
   await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
@@ -196,6 +118,7 @@ async def main() -> None:
     })
 
   print("===確認用アカウント受信禁止トランザクション===")
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
   hash_tf1: Hash256 = send_transaction(tx_tf1, account_a)
 
   await wait_transaction_status(
@@ -249,6 +172,7 @@ async def main() -> None:
     })
 
   print("===確認用モザイク受信禁止トランザクション===")
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
   hash_tf2: Hash256 = send_transaction(tx_tf2, account_a)
 
   await wait_transaction_status(
@@ -301,6 +225,7 @@ async def main() -> None:
     })
 
   print("===確認用トランザクション送信禁止トランザクション===")
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")
   hash_tf3: Hash256 = send_transaction(tx_tf3, restricted_account3)
 
   await wait_transaction_status(

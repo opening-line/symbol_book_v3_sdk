@@ -29,6 +29,7 @@ from symbolchain.sc import (
 from functions import (
   wait_transaction_status,
   send_transaction,
+  send_transfer_fees
 )
 
 async def main() -> None:
@@ -61,25 +62,12 @@ async def main() -> None:
     "Not Allowed Account 1 Address:", not_allowed_account1.address
   )
 
-  # 転送トランザクション
-  # （制限付きモザイクの作成に関わる必要な手数料を送付）
-  tx_pre: (
-    TransferTransactionV1
-  ) = facade.transaction_factory.create({
-      "type": "transfer_transaction_v1",  
-      "recipient_address": allowed_account1.address,
-      "mosaics": [
-        {
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 60000000,  # 60xym
-        }
-      ],
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-      "deadline": deadline_timestamp,
-    })
+  fee_amount = 60000000  # 60xym
+  recipient_addresses = [allowed_account1.address]
 
   print("===事前手数料転送トランザクション===")
-  hash_pre: Hash256 = send_transaction(tx_pre, account_a)
+  # 手数料を送付するトランザクションを生成、署名、アナウンス
+  hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
   await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
@@ -291,6 +279,7 @@ async def main() -> None:
     })
 
   print("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
+  print("承認結果がSuccessではなくFailure_xxxになれば成功")  
   hash_tf2: Hash256 = send_transaction(tx_tf2, allowed_account1)
 
   await wait_transaction_status(

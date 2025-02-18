@@ -59,8 +59,8 @@ async def main() -> None:
   # 16進数の文字列に変換
   secret = str(secret_hash)
 
-  print({"proof": proof})
-  print({"secret": secret})
+  print({"プルーフ": proof})
+  print({"シークレット": secret})
 
   # シークレットロックトランザクションの生成
   secret_lock_tx: (

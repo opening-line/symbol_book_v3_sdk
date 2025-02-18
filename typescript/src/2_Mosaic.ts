@@ -130,6 +130,9 @@ await waitTransactionStatus(
 )
 
 //モザイク情報を取得する
+//モザイクが生成されるまでの時差があるため数秒程度待つ
+await new Promise(resolve => setTimeout(resolve, 5000));
+
 const mosaicIdHex = new models.MosaicId(id)
   .toString()
   .replace("0x", "")

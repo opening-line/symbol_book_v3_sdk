@@ -145,6 +145,8 @@ async def main() -> None:
   )
 
   # モザイク情報を取得する
+  await asyncio.sleep(5) # モザイクが生成されるまでの時差があるため数秒程度待つ
+
   mosaic_id_hex = hex(mosaic_id)[2:]  # '0x'を除去
   mosaic_info = requests.get(
     f"{NODE_URL}/mosaics/{mosaic_id_hex}",

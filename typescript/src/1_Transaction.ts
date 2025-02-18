@@ -56,6 +56,7 @@ const jsonPayload = facade.transactionFactory.static.attachSignature(
 
 console.log("===転送トランザクション===")
 // ノードにアナウンスを行う
+console.log("アナウンス開始")
 const response = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT", //書き込み時はPUTを指定する
   headers: { "Content-Type": "application/json" },
@@ -104,6 +105,7 @@ await new Promise(async (resolve, reject) => {
 })
 
 //トランサクション情報を取得する
+console.log("トランザクション情報を取得中・・・")
 const txInfo = await fetch(
   new URL("/transactions/confirmed/" + hash.toString(), NODE_URL),
   {
@@ -121,7 +123,7 @@ console.log(
 // アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
 // メッセージはバイトに変換し、UTF-8形式でデコード。
 // 16進数のアドレスとメッセージを変換する処理を関数化
-
+console.log("変換したデータを表示")
 console.log(
   "トランザクション情報JSON表示",
   JSON.stringify(convertHexValuesInObject(txInfo), null, 2))

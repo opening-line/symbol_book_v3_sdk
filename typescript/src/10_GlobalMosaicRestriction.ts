@@ -13,8 +13,8 @@ import dotenv from "dotenv"
 import {
   waitTransactionStatus,
   createAndSendTransaction,
+  sendTransferFees
 } from "./functions"
-import { sendTransferFees } from "./functions/sendTransferFees"
 
 dotenv.config()
 

@@ -43,22 +43,20 @@ def main() -> None:
   )  # 2時間後（ミリ秒単位）
 
   # トランザクションの生成
-  tx: (TransferTransactionV1) = facade.transaction_factory.create(
-    {
-      "type": "transfer_transaction_v1",  # 転送トランザクション
-      "recipient_address": account_b.address,  # 送信先アカウントのアドレス
-      "mosaics": [
-        {
-          # 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym、xymは可分性（小数点以下）が6
-        }
-      ],
-      "message": b"\0Hello, AccountB!",
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-      "deadline": deadline_timestamp,
-    }
-  )
+  tx: (TransferTransactionV1) = facade.transaction_factory.create({
+    "type": "transfer_transaction_v1",  # 転送トランザクション
+    "recipient_address": account_b.address,  # 送信先アカウントのアドレス
+    "mosaics": [
+      {
+        # 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
+        "mosaic_id": 0x72C0212E67A08BCE,
+        "amount": 1000000,  # 1xym、xymは可分性（小数点以下）が6
+      }
+    ],
+    "message": b"\0Hello, AccountB!",
+    "signer_public_key": account_a.public_key,  # 署名者の公開鍵
+    "deadline": deadline_timestamp,
+  })
   # トランザクション手数料の計算と設定
   tx.fee = Amount(100 * tx.size)  # 手数料乗数、100は最大値
 
@@ -69,19 +67,19 @@ def main() -> None:
     tx, signature  # トランザクションを指定  # 署名を指定
   )
 
+  print("===転送トランザクション===")
   # ノードにアナウンスを行う
+  print("アナウンス開始")
   response = requests.put(  # 書き込み時はPUTを指定する
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload,  # 整形されたペイロードを指定
   ).json()
 
-  print("Response:", response)
+  print("アナウンス結果", response)
 
   # トランザクションハッシュの生成
   hash: Hash256 = facade.hash_transaction(tx)
-
-  print("===転送トランザクション===")
 
   # ノード上でのトランザクションの状態を一秒ごとに確認
   print("confirmed状態まで待機中..")

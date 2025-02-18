@@ -65,8 +65,7 @@ async def main() -> None:
   # （制限付きモザイクの作成に関わる必要な手数料を送付）
   tx_pre: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",  
       "recipient_address": allowed_account1.address,
       "mosaics": [
@@ -77,12 +76,11 @@ async def main() -> None:
       ],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_pre: Hash256 = send_transaction(tx_pre, account_a)
+    })
 
   print("===事前手数料転送トランザクション===")
+  hash_pre: Hash256 = send_transaction(tx_pre, account_a)
+
   await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
@@ -100,8 +98,7 @@ async def main() -> None:
 
   mosaic_definition_tx: (
     MosaicDefinitionTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_definition_transaction_v1",  
       "id": mosaic_id,
       "duration": 0,
@@ -109,21 +106,18 @@ async def main() -> None:
       "flags": mosaic_flags_value,
       "divisibility": 0,
       "signer_public_key": allowed_account1.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # モザイク供給量変更トランザクション
   mosaic_supply_change_tx: (
     MosaicSupplyChangeTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_supply_change_transaction_v1",  
       "mosaic_id": mosaic_id,
       "delta": 100,
       "action": "increase",
       "signer_public_key": allowed_account1.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # グローバルモザイク制限用のキーワードの生成
   # モザイクごとにユニークである必要がある
@@ -132,8 +126,7 @@ async def main() -> None:
 
   mosaic_global_restriction_tx: (
     MosaicGlobalRestrictionTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_global_restriction_transaction_v1",  
       "mosaic_id": mosaic_id,  # 制限対象のモザイクID
       "reference_mosaic_id": 0,  # 参照するモザイクID。制限対象のモザイクIDと同じ場合は0
@@ -144,8 +137,7 @@ async def main() -> None:
       # 値を比較する新しいタイプ（EQは同じ値であれば許可）
       "new_restriction_type": MosaicRestrictionType.EQ, 
       "signer_public_key": allowed_account1.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs_gmr = [
     mosaic_definition_tx,
@@ -159,15 +151,13 @@ async def main() -> None:
 
   tx_gmr: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs_gmr,
       "transactions_hash": inner_transaction_hash_gmr,
       "signer_public_key": allowed_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_gmr.fee = Amount(100 * tx_gmr.size)
 
   signature_gmr: Signature = allowed_account1.sign_transaction(
@@ -178,17 +168,18 @@ async def main() -> None:
     tx_gmr, signature_gmr
   )
 
+  print("===制限付きモザイク発行及び転送トランザクション===")
+  print("アナウンス開始")  
   response_gmr = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_gmr,
   ).json()
 
-  print("Response:", response_gmr)
+  print("アナウンス結果", response_gmr)
 
   hash_gmr: Hash256 = facade.hash_transaction(tx_gmr)
 
-  print("===制限付きモザイク発行及び転送トランザクション===")
 
   await wait_transaction_status(
     str(hash_gmr), NODE_URL, "confirmed"
@@ -198,8 +189,7 @@ async def main() -> None:
   # allowedAccount1に送受信の許可を適応
   mosaic_address_restriction_tx1: (
     MosaicAddressRestrictionTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_address_restriction_transaction_v1",  
       "mosaic_id": mosaic_id,  # 制限対象のモザイクID
       "restriction_key": restrictionKey,  # グローバルモザイク制限のキー
@@ -210,14 +200,12 @@ async def main() -> None:
       "target_address": allowed_account1.address,
       # 署名者の公開鍵
       "signer_public_key": allowed_account1.public_key,
-    }
-  )
+    })
 
   # allowedAccount2に送受信の許可を適応
   mosaic_address_restriction_tx2: (
     MosaicAddressRestrictionTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "mosaic_address_restriction_transaction_v1",  
       "mosaic_id": mosaic_id,
       "restriction_key": restrictionKey,
@@ -226,8 +214,7 @@ async def main() -> None:
       "target_address": allowed_account2.address,
       # 署名者の公開鍵
       "signer_public_key": allowed_account1.public_key, 
-    }
-  )
+    })
 
   txs_Mar = [
     mosaic_address_restriction_tx1,
@@ -240,15 +227,13 @@ async def main() -> None:
 
   tx_Mar: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs_Mar,
       "transactions_hash": inner_transaction_hash_Mar,
       "signer_public_key": allowed_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_Mar.fee = Amount(100 * tx_Mar.size)
 
   signature_Mar: Signature = allowed_account1.sign_transaction(
@@ -259,17 +244,17 @@ async def main() -> None:
     tx_Mar, signature_Mar
   )
 
+  print("===制限付きモザイクの送受信許可トランザクション===")
+  print("アナウンス開始")  
   response_Mar = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_Mar,
   ).json()
 
-  print("Response:", response_Mar)
+  print("アナウンス結果", response_Mar)
 
   hash_Mar: Hash256 = facade.hash_transaction(tx_Mar)
-
-  print("===制限付きモザイクの送受信許可トランザクション===")
 
   await wait_transaction_status(
     str(hash_Mar), NODE_URL, "confirmed"
@@ -278,19 +263,17 @@ async def main() -> None:
   # allowedAccount1からallowedAccount2への制限モザイクの送付
   tx_tf1: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": allowed_account2.address,
       "mosaics": [{"mosaic_id": mosaic_id, "amount": 1}],
       "signer_public_key": allowed_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_tf1: Hash256 = send_transaction(tx_tf1, allowed_account1)
+    })
 
   print("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
+  hash_tf1: Hash256 = send_transaction(tx_tf1, allowed_account1)
+
   await wait_transaction_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
@@ -299,19 +282,17 @@ async def main() -> None:
   # 制限がかかりエラーになることを確認する
   tx_tf2: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": not_allowed_account1.address,
       "mosaics": [{"mosaic_id": mosaic_id, "amount": 1}],
       "signer_public_key": allowed_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
-
-  hash_tf2: Hash256 = send_transaction(tx_tf2, allowed_account1)
+    })
 
   print("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
+  hash_tf2: Hash256 = send_transaction(tx_tf2, allowed_account1)
+
   await wait_transaction_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )

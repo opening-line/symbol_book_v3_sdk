@@ -59,16 +59,14 @@ async def main() -> None:
   # メタデータのトランザクションを生成
   metadata_tx: (
     AccountMetadataTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "account_metadata_transaction_v1",
       "target_address": account_a.address,  # 紐付ける対象のアカウントアドレス
       "scoped_metadata_key": metadata_key,  # 紐づけるメタデータのキー
       "value": metadata_value,  # 紐づけるメタデータの値
       "value_size_delta": len(metadata_value),  # 紐づけるメタデータの長さ
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [metadata_tx]
 
@@ -78,15 +76,13 @@ async def main() -> None:
 
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(100 * tx_agg.size)
 
   signature_agg: Signature = account_a.sign_transaction(tx_agg)
@@ -95,17 +91,18 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("===アカウントメタデータトランザクション===")
+  print("アナウンス開始")  
   response_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_agg,
   ).json()
 
-  print("Response:", response_agg)
+  print("アナウンス結果", response_agg)
 
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
-  print("===アカウントメタデータトランザクション===")
   await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
   )

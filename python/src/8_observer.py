@@ -96,16 +96,14 @@ async def main() -> None:
   # 監視で検知させるための転送トランザクション
   transfer_tx: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "transfer_transaction_v1",
       "recipient_address": account_b.address,
       "mosaics": [],
       "message": b"\0Hello, accountB!",
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
 
   await asyncio.gather(
     # WebSocket開始

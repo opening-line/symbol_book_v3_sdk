@@ -49,28 +49,24 @@ async def main() -> None:
   # 転送トランザクション1(accountA=>accountB)
   transfer_tx1: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_b.address,
       "mosaics": [],
       "message": b"\0Hello, accountB",
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # 転送トランザクション2(accountA=>accountB)
   transfer_tx2: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_a.address,
       "mosaics": [],
       "message": b"\0Hello, accountA!",
       "signer_public_key": account_b.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [transfer_tx1, transfer_tx2]
 
@@ -81,15 +77,13 @@ async def main() -> None:
   # アグリゲート本デッドトランザクションを生成
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(
     100 * (tx_agg.size + 1 * 104)
   )  # 連署者の署名分のサイズ （連署者 ＊ 104）を追加
@@ -126,25 +120,24 @@ async def main() -> None:
   # 連署者の署名追加
   restored_tx_agg.cosignatures.append(cosignB)
 
-  json_payload_restored_tx_agg = json.dumps(
-    {
+  json_payload_restored_tx_agg = json.dumps({
       "payload": (restored_tx_agg.serialize()).hex(),
-    }
-  )
+    })
 
+  print("===オフライン署名したトランザクションのアナウンス===")
+  print("アナウンス開始")  
   response_restored_tx_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_restored_tx_agg,
   ).json()
 
-  print("Response:", response_restored_tx_agg)
+  print("アナウンス結果", response_restored_tx_agg)
 
   hash__restored_tx_agg: Hash256 = facade.hash_transaction(
     restored_tx_agg
   )
 
-  print("===オフライン署名したトランザクションのアナウンス===")
   await wait_transaction_status(
     str(hash__restored_tx_agg), NODE_URL, "confirmed"
   )

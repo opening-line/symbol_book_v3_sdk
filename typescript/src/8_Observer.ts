@@ -26,7 +26,7 @@ const initializeWebSocket = async () => {
   // WebSocketに接続した時の処理
   ws.addEventListener("open", async () => {    
     // 接続時のレスポンスからUIDを取得
-    const response = await new Promise((resolve) => {
+    const uid = await new Promise((resolve) => {
       ws.addEventListener("message", (event: MessageEvent) => {
         const message = JSON.parse(event.data)
         if (message.uid) {
@@ -45,11 +45,11 @@ const initializeWebSocket = async () => {
     // チャンネル購読
     ws.send(
       JSON.stringify(
-        { uid: response, subscribe: confirmedChannelName }
+        { uid: uid, subscribe: confirmedChannelName }
       ))
     ws.send(
       JSON.stringify(
-        { uid: response, subscribe: unconfirmedChannelName }
+        { uid: uid, subscribe: unconfirmedChannelName }
       ))
   })
 

@@ -79,24 +79,32 @@ const jsonPayloadAgg =
     signatureAgg,
   )
 
+console.log("署名済みペイロード生成…")
+
 const payloadAgg = JSON.parse(jsonPayloadAgg).payload
+
+console.log("ペイロード",payloadAgg)
 
 // （実際はこれ以降は別のコード上で実装するものだが、便宜上同じコード上に記載）
 // メール等何かの方法（オフライン）でpayloadAggを送る
 
 // ペイロードからTxの復元
+console.log("ペイロードからTxの復元実施…")
 const restoredTxAgg =
   models.AggregateCompleteTransactionV2.deserialize(
     utils.hexToUint8(payloadAgg),
   )
 
 //検証を行い、改ざんされていないことを確認する
+console.log("署名の検証実施…")
 const responseVerify = facade.verifyTransaction(
   restoredTxAgg,
   restoredTxAgg.signature,
 )
 
 if (!responseVerify) throw new Error("署名の検証に失敗しました。")
+
+console.log("署名の検証に成功しました。")
 
 //accountBの連署
 const cosignB = facade.cosignTransaction(
@@ -105,6 +113,7 @@ const cosignB = facade.cosignTransaction(
 )
 
 //連署者の署名追加
+console.log("オフライン署名の実施…")
 restoredTxAgg.cosignatures.push(cosignB)
 
 const jsonPayloadRestoredTxAgg = JSON.stringify({
@@ -112,6 +121,7 @@ const jsonPayloadRestoredTxAgg = JSON.stringify({
 })
 
 console.log("===オフライン署名したトランザクションのアナウンス===")
+console.log("アナウンス開始")
 const responseRestoredTxAgg = await fetch(
   new URL("/transactions", NODE_URL),
   {

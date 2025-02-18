@@ -20,16 +20,18 @@ export async function waitTransactionStatus(
       if (status.code === "ResourceNotFound") {
         continue
       } else if (status.group === transactionStatus) {
-        console.log(
-          "結果 ",
-          status.code,
-          "エクスプローラー ",
+        console.log("confirmed完了!")        
+        console.log("承認結果",status.code)
+        console.log("承認状態",status.group)
+        console.log("トランザクションハッシュ",status.hash)
+        console.log("ブロック高",status.height)
+        console.log("Symbolエクスプローラー ",
           `https://testnet.symbol.fyi/transactions/${hash}`,
         )
         resolve({})
         return
       } else if (status.group === "failed") {
-        console.log("結果　エラー ", status.code)
+        console.log("承認結果 ", status.code)
         resolve({})
         return
       }

@@ -124,17 +124,17 @@ const jsonPayloadAgg =
     signatureAgg,
   )
 
+console.log("===ネームスペース登録及びリンクトランザクション===")
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-console.log("===ネームスペース登録及びリンクトランザクション===")
 await waitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,
@@ -154,5 +154,6 @@ const nameSpaceInfo = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "ネームスペース情報JSON表示",
   JSON.stringify(convertHexValuesInObject(nameSpaceInfo), null, 2),
 )

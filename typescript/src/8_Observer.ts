@@ -63,10 +63,12 @@ const initializeWebSocket = async () => {
     if (topic.startsWith("confirmedAdded")) {
       console.log("承認トランザクション検知:", tx)
       const hash = tx.meta.hash
-      console.log(
-        "結果 Success",
-        "エクスプローラー ",
-        `https://testnet.symbol.fyi/transactions/${hash}`)
+      const height = tx.meta.height      
+      console.log("トランザクションハッシュ",hash)
+      console.log("ブロック高",height)
+      console.log("Symbolエクスプローラー ",
+        `https://testnet.symbol.fyi/transactions/${hash}`,
+      )        
       ws.close()
     }
     // 未承認済みトランザクションを検知した時の処理

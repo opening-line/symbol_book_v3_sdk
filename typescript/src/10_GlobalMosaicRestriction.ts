@@ -53,12 +53,12 @@ const transferDescriptorPre =
     ],
   )
 
+console.log("===事前手数料転送トランザクション===")
 const hashPre = await createAndSendTransaction(
   transferDescriptorPre,
   accountA,
 )
 
-console.log("===事前手数料転送トランザクション===")
 await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
@@ -154,17 +154,17 @@ const jsonPayloadGmr =
     signatureGmr,
   )
 
+console.log("===制限付きモザイク発行及び転送トランザクション===")
 const responseGmr = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadGmr,
 }).then((res) => res.json())
 
-console.log({ responseGmr })
+console.log("アナウンス結果", responseGmr)
 
 const hashGmr = facade.hashTransaction(txGmr)
 
-console.log("===制限付きモザイク発行及び転送トランザクション===")
 await waitTransactionStatus(
   hashGmr.toString(),
   NODE_URL,
@@ -234,17 +234,17 @@ const jsonPayloadMar =
     signatureMar,
   )
 
+console.log("===制限付きモザイクの送受信許可トランザクション===")
 const responseMar = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadMar,
 }).then((res) => res.json())
 
-console.log({ responseMar })
+console.log("アナウンス結果", responseMar)
 
 const hashMar = facade.hashTransaction(txMar)
 
-console.log("===制限付きモザイクの送受信許可トランザクション===")
 await waitTransactionStatus(
   hashMar.toString(),
   NODE_URL,
@@ -263,14 +263,14 @@ const transferDescriptor1 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
+)
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
-)
 await waitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
@@ -290,14 +290,14 @@ const transferDescriptor2 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
+)
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
-)
 await waitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,

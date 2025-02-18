@@ -144,6 +144,9 @@ await waitTransactionStatus(
 )
 
 //ネームスペース情報を取得する（サブネームスペースの情報）
+//ネームスペース情報が登録されるまでの時差があるため数秒程度待つ 
+await new Promise(resolve => setTimeout(resolve, 5000));  
+
 const nameSpaceIdHex = new models.NamespaceId(subNamespaceId)
   .toString()
   .replace("0x", "")

@@ -80,7 +80,7 @@ async def main() -> None:
     facade.hash_embedded_transactions(txs)
   )
 
-  # アグリゲート本デッドトランザクションを生成
+  # アグリゲートボンデッドトランザクションを生成
   tx_agg: (
     AggregateBondedTransactionV2
   ) = facade.transaction_factory.create({

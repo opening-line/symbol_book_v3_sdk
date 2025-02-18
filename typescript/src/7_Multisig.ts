@@ -8,13 +8,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
+import {
+  waitTransactionStatus,
+} from "./functions"
+import { sendTransferFees } from "./functions/sendTransferFees"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -46,86 +47,14 @@ console.log(
   cosigAccount4.address.toString(),
 )
 
-// 転送トランザクション1
-// （マルチシグアカウントを構成する際に必要な手数料を送付）
-const transferDescriptorPre1 =
-  new descriptors.TransferTransactionV1Descriptor(
-    multisigAccount.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(1000000n), // 1xym
-      ),
-    ],
-  )
+const feeAmount = 1000000n; // 1xym
+const recipientAddresses = [multisigAccount.address, cosigAccount1.address];
 
-// 転送トランザクション2
-// （マルチシグアカウントに対してトランザクションを起案する手数料を送付）
-const transferDescriptorPre2 =
-  new descriptors.TransferTransactionV1Descriptor(
-    cosigAccount1.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(1000000n), // 1xym
-      ),
-    ],
-  )
+console.log("===事前手数料転送トランザクション===");
+// 手数料を送付するトランザクションを生成、署名、アナウンス
+const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
-const txsPre = [
-  {
-    transaction: transferDescriptorPre1,
-    signer: accountA.publicKey,
-  },
-  {
-    transaction: transferDescriptorPre2,
-    signer: accountA.publicKey,
-  },
-]
-
-const innerTransactionsPre = txsPre.map((tx) =>
-  facade.createEmbeddedTransactionFromTypedDescriptor(
-    tx.transaction,
-    tx.signer,
-  ),
-)
-
-const innerTransactionHashPre = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsPre,
-)
-
-const aggregateDescriptorPre =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
-    innerTransactionHashPre,
-    innerTransactionsPre,
-  )
-
-const txPre = facade.createTransactionFromTypedDescriptor(
-  aggregateDescriptorPre,
-  accountA.publicKey,
-  100,
-  60 * 60 * 2,
-)
-
-const signaturePre = accountA.signTransaction(txPre)
-const jsonPayloadPre =
-  facade.transactionFactory.static.attachSignature(
-    txPre,
-    signaturePre,
-  )
-
-const responsePre = await fetch(new URL("/transactions", NODE_URL), {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: jsonPayloadPre,
-}).then((res) => res.json())
-
-console.log({ responsePre })
-
-const hashPre = facade.hashTransaction(txPre)
-
-console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -196,18 +125,18 @@ const jsonPayloadMod = JSON.stringify({
   payload: utils.uint8ToHex(txMod.serialize()),
 })
 
+console.log("===マルチシグアカウント構成トランザクション===")
 const responseMod = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadMod,
 }).then((res) => res.json())
 
-console.log({ responseMod })
+console.log("アナウンス結果", responseMod)
 
 const hashMod = facade.hashTransaction(txMod)
 
-console.log("===マルチシグアカウント構成トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashMod.toString(),
   NODE_URL,
   "confirmed",
@@ -269,15 +198,15 @@ const jsonPayloadTf = JSON.stringify({
   payload: utils.uint8ToHex(txTf.serialize()),
 })
 
+console.log("===転送トランザクション（マルチシグアカウントから）===")
 const responseTf = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadTf,
 }).then((res) => res.json())
 
-console.log({ responseTf })
+console.log("アナウンス結果", responseTf)
 
 const hashTf = facade.hashTransaction(txTf)
 
-console.log("===転送トランザクション（マルチシグアカウントから）===")
-await awaitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")
+await waitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")

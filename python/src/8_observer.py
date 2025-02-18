@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import asyncio
 import requests
@@ -9,10 +8,9 @@ from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade
 from symbolchain.sc import TransferTransactionV1
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functions import (
+  send_transaction,
 )
-from functions.send_transaction import send_transaction
 
 async def initialize_websocket(NODE_URL, account_a) -> None:
   ws_endpoint = NODE_URL.replace("http", "ws") + "/ws"

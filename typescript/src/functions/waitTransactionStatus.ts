@@ -20,7 +20,7 @@ export async function waitTransactionStatus(
       if (status.code === "ResourceNotFound") {
         continue
       } else if (status.group === transactionStatus) {
-        console.log("confirmed完了!")        
+        console.log(`${status.group}完了!`)        
         console.log("承認結果",status.code)
         console.log("承認状態",status.group)
         console.log("トランザクションハッシュ",status.hash)

@@ -56,8 +56,7 @@ async def main() -> None:
   # ネームスペース登録トランザクション
   name_space_registration_tx: (
     NamespaceRegistrationTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "namespace_registration_transaction_v1",
       "id": root_name_space_id,  # ネームスペースID
       "registration_type": "root",  # ルートネームスペースとして登録
@@ -65,8 +64,7 @@ async def main() -> None:
       "parent_id": 0,  # ルートネームスペースの場合は0
       "name": root_name_space,  # レンタルするネームスペース名
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   sub_name_space = "tarou"  # サブネームスペース名の指定
   sub_name_space_id = generate_namespace_id(
@@ -75,8 +73,7 @@ async def main() -> None:
 
   sub_name_space_registration_tx: (
     NamespaceRegistrationTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "namespace_registration_transaction_v1",
       "id": sub_name_space_id,  # サブネームスペースID
       "registration_type": "child",  # サブネームスペースとして登録
@@ -84,26 +81,22 @@ async def main() -> None:
       "parent_id": root_name_space_id,  # 親に当たるネームスペースIDを指定
       "name": sub_name_space,  # レンタルするサブネームスペース名
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   address_alias_tx: (
     AddressAliasTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "address_alias_transaction_v1",
       "namespace_id": sub_name_space_id,  # リンクするネームスペースID
       "address": account_a.address,  # リンクするアカウントのアドレス
       # リンクする（LINK）、リンクを外す（UNLINK）
       "alias_action": AliasAction.LINK,
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   transfer_tx: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": facade.Address.from_namespace_id(
         NamespaceId(sub_name_space_id), NetworkType.TESTNET.value
@@ -111,8 +104,7 @@ async def main() -> None:
       "mosaics": [],
       "message": b"\0Hello, AccountA!",      
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs = [
     name_space_registration_tx,
@@ -127,15 +119,13 @@ async def main() -> None:
 
   tx_agg: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_agg.fee = Amount(100 * tx_agg.size)
 
   signature_agg: Signature = account_a.sign_transaction(tx_agg)
@@ -144,17 +134,18 @@ async def main() -> None:
     tx_agg, signature_agg
   )
 
+  print("===ネームスペース登録及びリンクトランザクション===")
+  print("アナウンス開始")  
   response_agg = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_agg,
   ).json()
 
-  print("Response:", response_agg)
+  print("アナウンス結果", response_agg)
 
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
-  print("===ネームスペース登録及びリンクトランザクション===")
   # トランザクションの状態を確認する処理を関数化
   await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
@@ -168,6 +159,7 @@ async def main() -> None:
   ).json()
 
   print(
+    "ネームスペース情報JSON表示",
     json.dumps(
       convert_hex_values_in_object(name_space_info), indent=2
     )

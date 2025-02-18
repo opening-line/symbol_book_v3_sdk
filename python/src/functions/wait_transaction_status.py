@@ -22,13 +22,16 @@ async def wait_transaction_status(
     if status["code"] == "ResourceNotFound":
       continue
     elif status["group"] == transaction_status:
-      explorer = (
-        f"https://testnet.symbol.fyi/transactions/{hash}"
-      )
-      print(f"結果: {status['code']} エクスプローラー: {explorer}")
+      print(f"{status['group']}完了!")
+      print("承認結果", status["code"])
+      print("承認状態", status["group"])
+      print("トランザクションハッシュ", hash)
+      print("ブロック高", status["height"])
+      print("Symbolエクスプローラー ")
+      print(f"https://testnet.symbol.fyi/transactions/{hash}")
       return
     elif status["group"] == "failed":
-      print("結果 エラー:", status["code"])
+      print("承認結果:", status["code"])
       return
 
   raise Exception("トランザクションが確認されませんでした。")

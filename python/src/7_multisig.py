@@ -59,8 +59,7 @@ async def main() -> None:
   # （マルチシグアカウントを構成する際に必要な手数料を送付）
   transfer_tx_pre_1: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": multisig_account.address,
       "mosaics": [
@@ -70,15 +69,13 @@ async def main() -> None:
         }
       ],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   # 転送トランザクション2
   # （マルチシグアカウントに対してトランザクションを起案する手数料を送付）
   transfer_tx_pre_2: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": cosig_account1.address,
       "mosaics": [
@@ -88,8 +85,7 @@ async def main() -> None:
         }
       ],
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-    }
-  )
+    })
 
   txs_pre = [transfer_tx_pre_1, transfer_tx_pre_2]
 
@@ -99,15 +95,13 @@ async def main() -> None:
 
   tx_pre: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs_pre,
       "transactions_hash": inner_transaction_hash_pre,
       "signer_public_key": account_a.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_pre.fee = Amount(100 * tx_pre.size)
 
   signature_pre: Signature = account_a.sign_transaction(tx_pre)
@@ -116,17 +110,18 @@ async def main() -> None:
     tx_pre, signature_pre
   )
 
+  print("===事前手数料転送トランザクション===")
+  print("アナウンス開始")
   response_pre = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_pre,
   ).json()
 
-  print("Response:", response_pre)
+  print("アナウンス結果", response_pre)
 
   hash_pre: Hash256 = facade.hash_transaction(tx_pre)
 
-  print("===事前手数料転送トランザクション===")
   await wait_transaction_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
@@ -134,8 +129,7 @@ async def main() -> None:
   # マルチシグアカウント構成トランザクション
   multisig_account_modification_tx: (
     MultisigAccountModificationTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "multisig_account_modification_transaction_v1",
       "min_removal_delta": 3,  # マルチシグのトランザクションに必要な署名数の増減値
       "min_approval_delta": 3,  # マルチシグの除名に必要な署名数の増減値
@@ -150,8 +144,7 @@ async def main() -> None:
       'address_deletions': [],
       # マルチシグ化するアカウントの公開鍵を指定
       "signer_public_key": multisig_account.public_key,
-    }
-  )
+    })
 
   txs_mod = [multisig_account_modification_tx]
 
@@ -161,15 +154,13 @@ async def main() -> None:
 
   tx_mod: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs_mod,
       "transactions_hash": inner_transaction_hash_mod,
       "signer_public_key": multisig_account.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_mod.fee = Amount(
     100 * (tx_mod.size + 4 * 104)
   )  # 連署者の署名分のサイズ （連署者 ＊ 104）を追加
@@ -192,23 +183,22 @@ async def main() -> None:
   tx_mod.cosignatures.append(cosign4)
 
   # トランザクションをペイロード化 => 文字列に整形
-  json_payload_mod = json.dumps(
-    {
+  json_payload_mod = json.dumps({
       "payload": (tx_mod.serialize()).hex(),
-    }
-  )
+    })
 
+  print("===マルチシグアカウント構成トランザクション===")
+  print("アナウンス開始")  
   response_mod = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_mod,
   ).json()
 
-  print("Response:", response_mod)
+  print("アナウンス結果", response_mod)
 
   hash_mod: Hash256 = facade.hash_transaction(tx_mod)
 
-  print("===マルチシグアカウント構成トランザクション===")
   await wait_transaction_status(
     str(hash_mod), NODE_URL, "confirmed"
   )
@@ -216,16 +206,14 @@ async def main() -> None:
   # 転送トランザクション(multisigAccount=>accountA)
   transfer_tx: (
     TransferTransactionV1
-  ) = facade.transaction_factory.create_embedded(
-    {
+  ) = facade.transaction_factory.create_embedded({
       "type": "transfer_transaction_v1",
       "recipient_address": account_a.address,
       "mosaics": [],
       "message": b"\0Hello accountA From Multisig Account!",
       # 署名者の公開鍵
       "signer_public_key": multisig_account.public_key,
-    }
-  )
+    })
 
   txs_tf = [transfer_tx]
 
@@ -235,16 +223,14 @@ async def main() -> None:
 
   tx_tf: (
     AggregateCompleteTransactionV2
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "aggregate_complete_transaction_v2",
       "transactions": txs_tf,
       "transactions_hash": inner_transaction_hash_tf,
       # 起案者であるcosigAccount1を指定
       "signer_public_key": cosig_account1.public_key,
       "deadline": deadline_timestamp,
-    }
-  )
+    })
   tx_tf.fee = Amount(
     100 * (tx_tf.size + 2 * 104)
   )  # 連署者の署名分のサイズ （連署者 ＊ 104）を追加
@@ -258,23 +244,22 @@ async def main() -> None:
   cosign3_tf: Cosignature = cosig_account3.cosign_transaction(tx_tf)
   tx_tf.cosignatures.append(cosign3_tf)
 
-  json_payload_tf = json.dumps(
-    {
+  json_payload_tf = json.dumps({
       "payload": (tx_tf.serialize()).hex(),
-    }
-  )
+    })
 
+  print("===転送トランザクション（マルチシグアカウントから）===")
+  print("アナウンス開始")  
   response_tf = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload_tf,
   ).json()
 
-  print("Response:", response_tf)
+  print("アナウンス結果", response_tf)
 
   hash_tf: Hash256 = facade.hash_transaction(tx_tf)
 
-  print("===転送トランザクション（マルチシグアカウントから）===")
   await wait_transaction_status(
     str(hash_tf), NODE_URL, "confirmed"
   )

@@ -65,8 +65,7 @@ async def main() -> None:
   # シークレットロックトランザクションの生成
   secret_lock_tx: (
     SecretLockTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "secret_lock_transaction_v1",
       "recipient_address": account_b.address,  # 送付先（解除先）のアドレス
       "secret": Hash256(secret),  # シークレット
@@ -79,14 +78,13 @@ async def main() -> None:
       "hash_algorithm": "hash_256",  # ロック生成に使用するアルゴリズム
       "signer_public_key": account_a.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
+    })
 
+  print("===シークレットロックトランザクション===")
   secret_lock_hash: Hash256 = send_transaction(
     secret_lock_tx, account_a
   )
 
-  print("===シークレットロックトランザクション===")
   await wait_transaction_status(
     str(secret_lock_hash), NODE_URL, "confirmed"
   )
@@ -98,8 +96,7 @@ async def main() -> None:
   # シークレットプルーフトランザクションの生成
   secret_proof_tx: (
     SecretProofTransactionV1
-  ) = facade.transaction_factory.create(
-    {
+  ) = facade.transaction_factory.create({
       "type": "secret_proof_transaction_v1",
       "recipient_address": account_b.address,  # 送付先（解除先）のアドレス
       "secret": Hash256(secret),  # シークレット
@@ -107,14 +104,13 @@ async def main() -> None:
       "hash_algorithm": "hash_256",  # ロック生成に使用するアルゴリズム
       "signer_public_key": account_b.public_key,  # 署名者の公開鍵
       "deadline": deadline_timestamp,
-    }
-  )
+    })
 
+  print("===シークレットプルーフトランザクション===")
   secret_proof_hash: Hash256 = send_transaction(
     secret_proof_tx, account_b
   )
 
-  print("===シークレットプルーフトランザクション===")
   await wait_transaction_status(
     str(secret_proof_hash), NODE_URL, "confirmed"
   )

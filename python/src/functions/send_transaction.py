@@ -21,14 +21,14 @@ def send_transaction(tx: Any, signAccount: SymbolAccount) -> Hash256:
   json_payload: str = facade.transaction_factory.attach_signature(
     tx, signature
   )
-
+  print("アナウンス開始")
   response = requests.put(
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload,
   ).json()
 
-  print("Response:", response)
+  print("アナウンス結果", response)
 
   hash: Hash256 = facade.hash_transaction(tx)
 

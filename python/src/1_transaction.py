@@ -43,22 +43,20 @@ def main() -> None:
   )  # 2時間後（ミリ秒単位）
 
   # トランザクションの生成
-  tx: (TransferTransactionV1) = facade.transaction_factory.create(
-    {
-      "type": "transfer_transaction_v1",  # 転送トランザクション
-      "recipient_address": account_b.address,  # 送信先アカウントのアドレス
-      "mosaics": [
-        {
-          # 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
-          "mosaic_id": 0x72C0212E67A08BCE,
-          "amount": 1000000,  # 1xym、xymは可分性（小数点以下）が6
-        }
-      ],
-      "message": b"\0Hello, AccountB!",
-      "signer_public_key": account_a.public_key,  # 署名者の公開鍵
-      "deadline": deadline_timestamp,
-    }
-  )
+  tx: (TransferTransactionV1) = facade.transaction_factory.create({
+    "type": "transfer_transaction_v1",  # 転送トランザクション
+    "recipient_address": account_b.address,  # 送信先アカウントのアドレス
+    "mosaics": [
+      {
+        # 72C0212E67A08BCEはテストネットの基軸通貨のモザイクID
+        "mosaic_id": 0x72C0212E67A08BCE,
+        "amount": 1000000,  # 1xym、xymは可分性（小数点以下）が6
+      }
+    ],
+    "message": b"\0Hello, AccountB!",
+    "signer_public_key": account_a.public_key,  # 署名者の公開鍵
+    "deadline": deadline_timestamp,
+  })
   # トランザクション手数料の計算と設定
   tx.fee = Amount(100 * tx.size)  # 手数料乗数、100は最大値
 
@@ -69,19 +67,19 @@ def main() -> None:
     tx, signature  # トランザクションを指定  # 署名を指定
   )
 
+  print("===転送トランザクション===")
   # ノードにアナウンスを行う
+  print("アナウンス開始")
   response = requests.put(  # 書き込み時はPUTを指定する
     f"{NODE_URL}/transactions",
     headers={"Content-Type": "application/json"},
     data=json_payload,  # 整形されたペイロードを指定
   ).json()
 
-  print("Response:", response)
+  print("アナウンス結果", response)
 
   # トランザクションハッシュの生成
   hash: Hash256 = facade.hash_transaction(tx)
-
-  print("===転送トランザクション===")
 
   # ノード上でのトランザクションの状態を一秒ごとに確認
   print("confirmed状態まで待機中..")
@@ -96,14 +94,16 @@ def main() -> None:
     if status["code"] == "ResourceNotFound":
       continue
     elif status["group"] == "confirmed":
-      print(status)
-      explorer = (
-        f"https://testnet.symbol.fyi/transactions/{hash}"
-      )
-      print(f"結果: {status['code']} エクスプローラー: {explorer}")
+      print("confirmed完了!")
+      print("承認結果", status["code"])
+      print("承認状態", status["group"])
+      print("トランザクションハッシュ", hash)
+      print("ブロック高", status["height"])
+      print("Symbolエクスプローラー ")
+      print(f"https://testnet.symbol.fyi/transactions/{hash}")
       break
     elif status["group"] == "failed":
-      print("結果 エラー:", status["code"])
+      print("承認結果:", status["code"])
       break
   else:
     raise Exception("トランザクションが確認されませんでした。")
@@ -115,13 +115,15 @@ def main() -> None:
   ).json()
 
   # オブジェクト内のオブジェクトを展開して表示
-  print(json.dumps(tx_info, indent=2))
+  print("トランザクション情報JSON表示",
+        json.dumps(tx_info, indent=2))
 
   # アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
   # アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
   # メッセージはバイトに変換し、UTF-8形式でデコード。
   # 16進数のアドレスとメッセージを変換する処理を関数化
-  print(json.dumps(convert_hex_values_in_object(tx_info), indent=2))
+  print("トランザクション情報JSON表示",
+    json.dumps(convert_hex_values_in_object(tx_info), indent=2))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 # アグリゲートボンデッドトランザクションをハッシュロックし、オンチェーン上で連署を行う
 import os
-import sys
 import json
 import requests
 import asyncio
@@ -19,23 +18,16 @@ from symbolchain.sc import (
   HashLockTransactionV1,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.send_transaction import send_transaction
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
+  wait_transaction_status,
+  send_transaction,
 )
-
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -139,7 +131,7 @@ async def main() -> None:
   )
 
   print("===ハッシュロックトランザクション===")
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_lock_hash), NODE_URL, "confirmed"
   )
 
@@ -158,7 +150,7 @@ async def main() -> None:
 
   # partial（オンチェーン上で連署待ちの状態）の確認
   print("===アグリゲートボンデッドトランザクション===")
-  await await_transaction_status(str(hash_agg), NODE_URL, "partial")
+  await wait_transaction_status(str(hash_agg), NODE_URL, "partial")
 
   # アカウントBが連署を必要とするトランザクションを検出する処理
   query = {
@@ -202,7 +194,7 @@ async def main() -> None:
   print("Response:", response_cos)
 
   print("===アグリゲートボンデッドトランザクションへの連署===")
-  await await_transaction_status(
+  await wait_transaction_status(
     hash_agg_string,
     NODE_URL,
     "confirmed",

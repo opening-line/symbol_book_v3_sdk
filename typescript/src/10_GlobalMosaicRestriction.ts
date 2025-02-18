@@ -10,16 +10,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -55,13 +53,13 @@ const transferDescriptorPre =
     ],
   )
 
+console.log("===事前手数料転送トランザクション===")
 const hashPre = await createAndSendTransaction(
   transferDescriptorPre,
   accountA,
 )
 
-console.log("===事前手数料転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -156,18 +154,18 @@ const jsonPayloadGmr =
     signatureGmr,
   )
 
+console.log("===制限付きモザイク発行及び転送トランザクション===")
 const responseGmr = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadGmr,
 }).then((res) => res.json())
 
-console.log({ responseGmr })
+console.log("アナウンス結果", responseGmr)
 
 const hashGmr = facade.hashTransaction(txGmr)
 
-console.log("===制限付きモザイク発行及び転送トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashGmr.toString(),
   NODE_URL,
   "confirmed",
@@ -236,18 +234,18 @@ const jsonPayloadMar =
     signatureMar,
   )
 
+console.log("===制限付きモザイクの送受信許可トランザクション===")
 const responseMar = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadMar,
 }).then((res) => res.json())
 
-console.log({ responseMar })
+console.log("アナウンス結果", responseMar)
 
 const hashMar = facade.hashTransaction(txMar)
 
-console.log("===制限付きモザイクの送受信許可トランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashMar.toString(),
   NODE_URL,
   "confirmed",
@@ -265,15 +263,15 @@ const transferDescriptor1 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
+)
 const hashTf1 = await createAndSendTransaction(
   transferDescriptor1,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
-)
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf1.toString(),
   NODE_URL,
   "confirmed",
@@ -292,15 +290,15 @@ const transferDescriptor2 =
     ],
   )
 
+console.log(
+  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
+)
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   allowedAccount1,
 )
 
-console.log(
-  "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
-)
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashTf2.toString(),
   NODE_URL,
   "confirmed",

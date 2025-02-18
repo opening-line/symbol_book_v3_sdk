@@ -10,16 +10,14 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
-import { 
-  convertHexValuesInObject,
-} from "../functions/convertHexValuesInObject"
+import {
+  waitTransactionStatus,
+  convertHexValuesInObject
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -125,20 +123,21 @@ const jsonPayloadAgg =
     txAgg,
     signatureAgg,
   )
-  
+
+console.log("===ネームスペース登録及びリンクトランザクション===")
 console.log("アナウンス開始")
+
 const responseAgg = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: jsonPayloadAgg,
 }).then((res) => res.json())
 
-console.log({ responseAgg })
+console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-console.log("===ネームスペース登録及びリンクトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",
@@ -157,5 +156,6 @@ const nameSpaceInfo = await fetch(
 ).then((res) => res.json())
 
 console.log(
+  "ネームスペース情報JSON表示",
   JSON.stringify(convertHexValuesInObject(nameSpaceInfo), null, 2),
 )

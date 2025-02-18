@@ -7,15 +7,15 @@ import {
   models,
 } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
-import { 
-  convertHexValuesInObject,
-} from "../functions/convertHexValuesInObject"
+import {
+  convertHexValuesInObject
+} from "./functions"
 
 // dotenvの設定
 dotenv.config()
 
 //Symbolへ接続するためのノードを指定
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 //秘密鍵からのアカウント復元
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
@@ -54,6 +54,7 @@ const jsonPayload = facade.transactionFactory.static.attachSignature(
   signature, // 署名を指定
 )
 
+console.log("===転送トランザクション===")
 // ノードにアナウンスを行う
 console.log("アナウンス開始")
 const response = await fetch(new URL("/transactions", NODE_URL), {
@@ -62,12 +63,10 @@ const response = await fetch(new URL("/transactions", NODE_URL), {
   body: jsonPayload, //整形されたペイロードを指定
 }).then((res) => res.json())
 
-console.log({ response })
+console.log("アナウンス結果", response)
 
 // トランザクションハッシュの生成
 const hash = facade.hashTransaction(tx)
-
-console.log("===転送トランザクション===")
 
 //　ノード上でのトランザクションの状態を一秒ごとに確認
 console.log(`confirmed状態まで待機中..`)
@@ -85,18 +84,19 @@ await new Promise(async (resolve, reject) => {
     //トランザクションの状態がconfirmedになっていたら結果を表示させる
     if (status.code === "ResourceNotFound") {
       continue
-    } else if (status.group === "confirmed") {
-      console.log(status)
-      console.log(
-        "結果 ",
-        status.code,
-        "エクスプローラー ",
+    } else if (status.group === "confirmed") {    
+      console.log("confirmed完了!")
+      console.log("承認結果",status.code)
+      console.log("承認状態",status.group)
+      console.log("トランザクションハッシュ",status.hash)
+      console.log("ブロック高",status.height)
+      console.log("Symbolエクスプローラー ",
         `https://testnet.symbol.fyi/transactions/${hash}`,
       )
       resolve({})
       return
     } else if (status.group === "failed") {
-      console.log("結果　エラー ", status.code)
+      console.log("承認結果", status.code)
       resolve({})
       return
     }
@@ -115,11 +115,15 @@ const txInfo = await fetch(
 ).then((res) => res.json())
 
 // オブジェクト内のオブジェクトを展開して表示
-console.log(JSON.stringify(txInfo, null, 2))
+console.log(
+  "トランザクション情報JSON表示",
+  JSON.stringify(txInfo, null, 2))
 
 // アドレスやメッセージは16進数文字列になっているため表示するには以下変換が必要になる
 // アドレスはAddressオブジェクトに変換後、最終的に文字列に変換
 // メッセージはバイトに変換し、UTF-8形式でデコード。
 // 16進数のアドレスとメッセージを変換する処理を関数化
 console.log("変換したデータを表示")
-console.log(JSON.stringify(convertHexValuesInObject(txInfo), null, 2))
+console.log(
+  "トランザクション情報JSON表示",
+  JSON.stringify(convertHexValuesInObject(txInfo), null, 2))

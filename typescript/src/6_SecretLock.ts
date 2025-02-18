@@ -9,16 +9,14 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import { 
+import {
+  waitTransactionStatus,
   createAndSendTransaction,
-} from "../functions/createAndSendTransaction"
-import { 
-  awaitTransactionStatus,
-} from "../functions/awaitTransactionStatus"
+} from "./functions"
 
 dotenv.config()
 
-const NODE_URL = "https://sym-test-03.opening-line.jp:3001"
+const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 const privateKeyA = new PrivateKey(process.env.PRIVATE_KEY_A!)
 const accountA = facade.createAccount(privateKeyA)
@@ -39,8 +37,8 @@ hashObject.update(randomUint8)
 // 16進数の文字列に変換
 const secret = hashObject.hex()
 
-console.log({ proof })
-console.log({ secret })
+console.log("プルーフ", proof)
+console.log("シークレット", secret)
 
 const secretLock1Descriptor =
   // シークレットロックトランザクション
@@ -56,13 +54,12 @@ const secretLock1Descriptor =
     models.LockHashAlgorithm.SHA3_256, // ロック生成に使用するアルゴリズム
   )
 
+console.log("===シークレットロックトランザクション===")
 const hashLock = await createAndSendTransaction(
   secretLock1Descriptor,
   accountA,
 )
-
-console.log("===シークレットロックトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -81,13 +78,13 @@ const proofDescriptor =
     utils.hexToUint8(proof), // プルーフ
   )
 
+console.log("===シークレットプルーフトランザクション===")
 const hashProof = await createAndSendTransaction(
   proofDescriptor,
   accountB,
 )
 
-console.log("===シークレットプルーフトランザクション===")
-await awaitTransactionStatus(
+await waitTransactionStatus(
   hashProof.toString(),
   NODE_URL,
   "confirmed",

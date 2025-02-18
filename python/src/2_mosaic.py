@@ -1,6 +1,5 @@
 # モザイクを生成し送付するコード
 import os
-import sys
 import json
 import random
 import requests
@@ -24,21 +23,15 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-sys.path.append(
-  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-)
-from functions.convert_hex_values_in_object import (
+from functions import (
   convert_hex_values_in_object,
+  wait_transaction_status,
 )
-from functions.await_transaction_status import (
-  await_transaction_status,
-)
-
 
 async def main() -> None:
   load_dotenv()
 
-  NODE_URL: str = "https://sym-test-03.opening-line.jp:3001"
+  NODE_URL: str = os.getenv("NODE_URL") or ""
   facade: SymbolFacade = SymbolFacade("testnet")
 
   private_key_a: str = os.getenv("PRIVATE_KEY_A") or ""
@@ -155,7 +148,7 @@ async def main() -> None:
   print("===モザイク発行及び転送トランザクション===")
 
   # トランザクションの状態を確認する処理を関数化
-  await await_transaction_status(
+  await wait_transaction_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 

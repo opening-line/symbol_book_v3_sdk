@@ -2,7 +2,7 @@
 1-3章で扱うtypescriptとpythonのSDK及び各種トランザクションの生成
 
 # typescrypt
-node v23.3.0
+node v22系を使用する
 
 ## 環境構築手順
 モジュールのインストール

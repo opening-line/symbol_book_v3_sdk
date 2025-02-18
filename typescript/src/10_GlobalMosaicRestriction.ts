@@ -14,6 +14,7 @@ import {
   waitTransactionStatus,
   createAndSendTransaction,
 } from "./functions"
+import { sendTransferFees } from "./functions/sendTransferFees"
 
 dotenv.config()
 
@@ -40,24 +41,14 @@ console.log(
   notAllowedAccount1.address.toString(),
 )
 
-// 転送トランザクション
-// （制限付きモザイクの作成に関わる必要な手数料を送付）
-const transferDescriptorPre =
-  new descriptors.TransferTransactionV1Descriptor(
-    allowedAccount1.address,
-    [
-      new descriptors.UnresolvedMosaicDescriptor(
-        new models.UnresolvedMosaicId(0x72C0212E67A08BCEn),
-        new models.Amount(60000000n), // 60xym
-      ),
-    ],
-  )
+const feeAmount = 60000000n; // 60xym
+const recipientAddresses = [
+  allowedAccount1.address,
+];
 
-console.log("===事前手数料転送トランザクション===")
-const hashPre = await createAndSendTransaction(
-  transferDescriptorPre,
-  accountA,
-)
+console.log("===事前手数料転送トランザクション===");
+// 手数料を送付するトランザクションを生成、署名、アナウンス
+const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
 await waitTransactionStatus(
   hashPre.toString(),
@@ -123,7 +114,7 @@ const txsGmr = [
   },
 ]
 
-const innerTransactionsGmr = txsGmr.map((tx) =>
+const innerTxsGmr = txsGmr.map((tx) =>
   facade.createEmbeddedTransactionFromTypedDescriptor(
     tx.transaction,
     tx.signer,
@@ -131,13 +122,13 @@ const innerTransactionsGmr = txsGmr.map((tx) =>
 )
 
 const innerTransactionHashGmr = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsGmr,
+  innerTxsGmr,
 )
 
 const aggregateDescriptorGmr =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
     innerTransactionHashGmr,
-    innerTransactionsGmr,
+    innerTxsGmr,
   )
 
 const txGmr = facade.createTransactionFromTypedDescriptor(
@@ -155,6 +146,7 @@ const jsonPayloadGmr =
   )
 
 console.log("===制限付きモザイク発行及び転送トランザクション===")
+console.log("アナウンス開始")
 const responseGmr = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
@@ -177,7 +169,7 @@ const mosaicAddressRestrictionDescriptor1 =
   new descriptors.MosaicAddressRestrictionTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id), // 制限対象のモザイクID
     restrictionKey, // グローバルモザイク制限のキー
-    0xffffffffffffffffn, // 現在の値　、初回は 0xFFFFFFFFFFFFFFFF
+    0xFFFFFFFFFFFFFFFFn, // 現在の値　、初回は 0xFFFFFFFFFFFFFFFF
     1n, // 新しい値（比較タイプがEQで値が1なので許可）
     allowedAccount1.address, // 発行者自身にも設定しないと送受信できない
   )
@@ -187,7 +179,7 @@ const mosaicAddressRestrictionDescriptor2 =
   new descriptors.MosaicAddressRestrictionTransactionV1Descriptor(
     new models.UnresolvedMosaicId(id),
     restrictionKey,
-    0xffffffffffffffffn,
+    0xFFFFFFFFFFFFFFFFn,
     1n,
     allowedAccount2.address,
   )
@@ -203,7 +195,7 @@ const txsMar = [
   },
 ]
 
-const innerTransactionsMar = txsMar.map((tx) =>
+const innerTxsMar = txsMar.map((tx) =>
   facade.createEmbeddedTransactionFromTypedDescriptor(
     tx.transaction,
     tx.signer,
@@ -211,13 +203,13 @@ const innerTransactionsMar = txsMar.map((tx) =>
 )
 
 const innerTransactionHashMar = SymbolFacade.hashEmbeddedTransactions(
-  innerTransactionsMar,
+  innerTxsMar,
 )
 
 const aggregateDescriptorMar =
   new descriptors.AggregateCompleteTransactionV2Descriptor(
     innerTransactionHashMar,
-    innerTransactionsMar,
+    innerTxsMar,
   )
 
 const txMar = facade.createTransactionFromTypedDescriptor(
@@ -235,6 +227,7 @@ const jsonPayloadMar =
   )
 
 console.log("===制限付きモザイクの送受信許可トランザクション===")
+console.log("アナウンス開始")
 const responseMar = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
@@ -293,6 +286,7 @@ const transferDescriptor2 =
 console.log(
   "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
 )
+console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
 const hashTf2 = await createAndSendTransaction(
   transferDescriptor2,
   allowedAccount1,

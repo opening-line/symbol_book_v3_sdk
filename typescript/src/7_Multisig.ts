@@ -126,6 +126,7 @@ const jsonPayloadMod = JSON.stringify({
 })
 
 console.log("===マルチシグアカウント構成トランザクション===")
+console.log("アナウンス開始")
 const responseMod = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
@@ -199,6 +200,7 @@ const jsonPayloadTf = JSON.stringify({
 })
 
 console.log("===転送トランザクション（マルチシグアカウントから）===")
+console.log("アナウンス開始")
 const responseTf = await fetch(new URL("/transactions", NODE_URL), {
   method: "PUT",
   headers: { "Content-Type": "application/json" },

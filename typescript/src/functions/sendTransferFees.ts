@@ -36,7 +36,7 @@ import {
       signer: signAccount.publicKey,
     }));
   
-    const innerTransactionsPre = txsPre.map((tx) =>
+    const innerTxsPre = txsPre.map((tx) =>
       facade.createEmbeddedTransactionFromTypedDescriptor(
         tx.transaction,
         tx.signer,
@@ -44,13 +44,13 @@ import {
     );
   
     const innerTransactionHashPre = SymbolFacade.hashEmbeddedTransactions(
-      innerTransactionsPre,
+      innerTxsPre,
     );
   
     const aggregateDescriptorPre =
       new descriptors.AggregateCompleteTransactionV2Descriptor(
         innerTransactionHashPre,
-        innerTransactionsPre,
+        innerTxsPre,
       );
   
     const txPre = facade.createTransactionFromTypedDescriptor(
@@ -66,7 +66,7 @@ import {
         txPre,
         signaturePre,
       );
-      
+
     console.log("アナウンス開始")
     const responsePre = await fetch(new URL("/transactions", NODE_URL), {
       method: "PUT",

@@ -118,6 +118,7 @@ await new Promise((resolve) => setTimeout(resolve, 1000))
 
 console.log("===アグリゲートボンデッドトランザクション===")
 // アグリゲートボンデッドトランザクションのアナウンス
+console.log("アナウンス開始")
 const responseAgg = await fetch(
   // エンドポイントがに/transactions/partialであることに注意
   new URL("/transactions/partial", NODE_URL),
@@ -164,6 +165,8 @@ const cosignatureRequest =
   accountB.cosignTransactionHash(hashAggRestore,true).toJson()
   
 console.log("===アグリゲートボンデッドトランザクションへの連署===")
+console.log("アナウンス開始")
+
 const responseCos = await fetch(
   // エンドポイントが/transactions/cosignatureであることに注意
   new URL("/transactions/cosignature", NODE_URL),

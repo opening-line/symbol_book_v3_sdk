@@ -154,10 +154,9 @@ console.log(
   JSON.stringify(convertHexValuesInObject(txSearchInfo), null, 2),
 )
 
-
 const hashAggString = txSearchInfo.data[0].meta.aggregateHash
 const hashAggRestore = new models.Hash256(
-  utils.hexToUint8(hashAggString),
+  Uint8Array.from(utils.hexToUint8(hashAggString))
 )
 
 // 連署者による署名

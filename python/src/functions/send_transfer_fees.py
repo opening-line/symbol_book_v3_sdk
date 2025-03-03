@@ -13,10 +13,10 @@ def send_transfer_fees(signAccount: SymbolAccount, recipientAddresses: list, fee
   facade: SymbolFacade = SymbolFacade("testnet")
 
   network_time = requests.get(f"{NODE_URL}/node/time").json()
-  current_timestamp: int = int(
+  receiveTimestamp: int = int(
     network_time["communicationTimestamps"]["receiveTimestamp"]
   )
-  deadline_timestamp: int = current_timestamp + (
+  deadline_timestamp: int = receiveTimestamp + (
     2 * 60 * 60 * 1000
   )  # 2時間後（ミリ秒単位）
 

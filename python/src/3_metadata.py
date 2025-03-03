@@ -38,10 +38,10 @@ async def main() -> None:
   )
 
   network_time = requests.get(f"{NODE_URL}/node/time").json()
-  current_timestamp: int = int(
+  receiveTimestamp: int = int(
     network_time["communicationTimestamps"]["receiveTimestamp"]
   )
-  deadline_timestamp: int = current_timestamp + (2 * 60 * 60 * 1000)
+  deadline_timestamp: int = receiveTimestamp + (2 * 60 * 60 * 1000)
 
   # メタデータのキーの指定
   # 紐づける対象で同じキーを指定した場合は上書きとなる。今回はユニークなキーを指定する

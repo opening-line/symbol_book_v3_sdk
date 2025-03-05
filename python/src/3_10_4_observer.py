@@ -8,9 +8,7 @@ from symbolchain.CryptoTypes import PrivateKey
 from symbolchain.facade.SymbolFacade import SymbolFacade
 from symbolchain.sc import TransferTransactionV1
 
-from functions import (
-  send_transaction,
-)
+from send_tx import send_tx
 
 async def initialize_websocket(NODE_URL, account_a) -> None:
   ws_endpoint = NODE_URL.replace("http", "ws") + "/ws"
@@ -108,14 +106,14 @@ async def main() -> None:
   await asyncio.gather(
     # WebSocket開始
     initialize_websocket(NODE_URL, account_a),
-    send_transaction_after_delay(transfer_tx, account_a)
+    send_tx_after_delay(transfer_tx, account_a)
   )
 
-async def send_transaction_after_delay(transfer_tx, account_a):
+async def send_tx_after_delay(transfer_tx, account_a):
   # 接続が確立するまで1秒待つ
   await asyncio.sleep(1)  
   # トランザクション送信
-  send_transaction(transfer_tx, account_a)
+  send_tx(transfer_tx, account_a)
 
 if __name__ == "__main__":
   asyncio.run(main())

@@ -7,9 +7,7 @@ import {
   models,
 } from "symbol-sdk/symbol"
 import dotenv from "dotenv"
-import {
-  convertHexValuesInObject
-} from "./functions"
+import { convertHexValues } from "./convertHexValues"
 
 // dotenvの設定
 dotenv.config()
@@ -126,4 +124,4 @@ console.log(
 console.log("変換したデータを表示")
 console.log(
   "トランザクション情報JSON表示",
-  JSON.stringify(convertHexValuesInObject(txInfo), null, 2))
+  JSON.stringify(convertHexValues(txInfo), null, 2))

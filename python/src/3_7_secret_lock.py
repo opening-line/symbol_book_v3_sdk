@@ -15,10 +15,8 @@ from symbolchain.sc import (
   SecretProofTransactionV1,
 )
 
-from functions import (
-  wait_transaction_status,
-  send_transaction,
-)
+from wait_tx_status import wait_tx_status
+from send_tx import send_tx
 
 async def main() -> None:
   load_dotenv()
@@ -81,11 +79,11 @@ async def main() -> None:
     })
 
   print("===シークレットロックトランザクション===")
-  secret_lock_hash: Hash256 = send_transaction(
+  secret_lock_hash: Hash256 = send_tx(
     secret_lock_tx, account_a
   )
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(secret_lock_hash), NODE_URL, "confirmed"
   )
 
@@ -107,11 +105,11 @@ async def main() -> None:
     })
 
   print("===シークレットプルーフトランザクション===")
-  secret_proof_hash: Hash256 = send_transaction(
+  secret_proof_hash: Hash256 = send_tx(
     secret_proof_tx, account_b
   )
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(secret_proof_hash), NODE_URL, "confirmed"
   )
 

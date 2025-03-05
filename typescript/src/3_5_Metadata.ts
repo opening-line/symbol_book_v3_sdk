@@ -9,10 +9,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  convertHexValuesInObject
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { convertHexValues } from "./convertHexValues"
 
 dotenv.config()
 
@@ -89,7 +87,7 @@ console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",
@@ -110,7 +108,7 @@ const metadataInfo1 = await fetch(
 
 console.log(
   "メタデータ情報アドレス検索結果JSON表示",
-  JSON.stringify(convertHexValuesInObject(metadataInfo1), null, 2),
+  JSON.stringify(convertHexValues(metadataInfo1), null, 2),
 )
 
 //メタデータ情報を取得する(メタデータキーが指定されているメタデータ一覧)
@@ -131,5 +129,5 @@ const metadataInfo2 = await fetch(
 
 console.log(
   "メタデータ情報メタデータキー検索結果JSON表示",
-  JSON.stringify(convertHexValuesInObject(metadataInfo2), null, 2),
+  JSON.stringify(convertHexValues(metadataInfo2), null, 2),
 )

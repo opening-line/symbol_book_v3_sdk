@@ -26,11 +26,9 @@ from symbolchain.sc import (
   MosaicAddressRestrictionTransactionV1,
 )
 
-from functions import (
-  wait_transaction_status,
-  send_transaction,
-  send_transfer_fees
-)
+from wait_tx_status import wait_tx_status
+from send_tx import send_tx
+from send_transfer_fees import send_transfer_fees
 
 async def main() -> None:
   load_dotenv()
@@ -69,7 +67,7 @@ async def main() -> None:
   # 手数料を送付するトランザクションを生成、署名、アナウンス
   hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -169,7 +167,7 @@ async def main() -> None:
   hash_gmr: Hash256 = facade.hash_transaction(tx_gmr)
 
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_gmr), NODE_URL, "confirmed"
   )
 
@@ -244,7 +242,7 @@ async def main() -> None:
 
   hash_Mar: Hash256 = facade.hash_transaction(tx_Mar)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_Mar), NODE_URL, "confirmed"
   )
 
@@ -260,9 +258,9 @@ async def main() -> None:
     })
 
   print("===制限付きモザイクが許可されたアカウントへの転送トランザクション===")
-  hash_tf1: Hash256 = send_transaction(tx_tf1, allowed_account1)
+  hash_tf1: Hash256 = send_tx(tx_tf1, allowed_account1)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
 
@@ -280,9 +278,9 @@ async def main() -> None:
 
   print("===制限付きモザイクが許可されてないアカウントへの転送トランザクション===")
   print("承認結果がSuccessではなくFailure_xxxになれば成功")  
-  hash_tf2: Hash256 = send_transaction(tx_tf2, allowed_account1)
+  hash_tf2: Hash256 = send_tx(tx_tf2, allowed_account1)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )
 

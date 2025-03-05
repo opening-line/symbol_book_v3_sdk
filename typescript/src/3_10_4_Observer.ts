@@ -3,10 +3,7 @@ import { PrivateKey } from "symbol-sdk"
 import { Network, SymbolFacade, descriptors } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  createAndSendTransaction,
-} from "./functions"
-
+import { createAndSendTx } from "./createAndSendTx"
 
 dotenv.config()
 
@@ -103,4 +100,4 @@ await initializeWebSocket()
 // 接続が確立するまで1秒待つ
 await new Promise((resolve) => setTimeout(resolve, 1000))
 // トランザクション送信
-await createAndSendTransaction(transferDescriptor, accountA)
+await createAndSendTx(transferDescriptor, accountA)

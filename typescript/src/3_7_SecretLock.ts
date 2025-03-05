@@ -9,10 +9,8 @@ import {
 
 import dotenv from "dotenv"
 import sha3 from "js-sha3"
-import {
-  waitTransactionStatus,
-  createAndSendTransaction,
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { createAndSendTx } from "./createAndSendTx"
 
 dotenv.config()
 
@@ -55,11 +53,11 @@ const secretLock1Descriptor =
   )
 
 console.log("===シークレットロックトランザクション===")
-const hashLock = await createAndSendTransaction(
+const hashLock = await createAndSendTx(
   secretLock1Descriptor,
   accountA,
 )
-await waitTransactionStatus(
+await waitTxStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -79,12 +77,12 @@ const proofDescriptor =
   )
 
 console.log("===シークレットプルーフトランザクション===")
-const hashProof = await createAndSendTransaction(
+const hashProof = await createAndSendTx(
   proofDescriptor,
   accountB,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashProof.toString(),
   NODE_URL,
   "confirmed",

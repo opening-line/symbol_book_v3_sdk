@@ -9,10 +9,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  convertHexValuesInObject
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { convertHexValues } from "./convertHexValues"
 
 dotenv.config()
 
@@ -123,7 +121,7 @@ console.log("アナウンス結果", responseAgg)
 const hashAgg = facade.hashTransaction(txAgg)
 
 // トランザクションの状態を確認する処理を関数化
-await waitTransactionStatus(
+await waitTxStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",
@@ -146,5 +144,5 @@ const mosaicInfo = await fetch(
 
 console.log(
   "モザイク情報JSON表示",
-  JSON.stringify(convertHexValuesInObject(mosaicInfo), null, 2),
+  JSON.stringify(convertHexValues(mosaicInfo), null, 2),
 )

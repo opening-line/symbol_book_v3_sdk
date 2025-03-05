@@ -8,10 +8,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  sendTransferFees
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { sendTransferFees } from "./sendTransferFees"
 
 dotenv.config()
 
@@ -54,7 +52,7 @@ console.log("===事前手数料転送トランザクション===");
 // 手数料を送付するトランザクションを生成、署名、アナウンス
 const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -137,7 +135,7 @@ console.log("アナウンス結果", responseMod)
 
 const hashMod = facade.hashTransaction(txMod)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashMod.toString(),
   NODE_URL,
   "confirmed",
@@ -211,4 +209,4 @@ console.log("アナウンス結果", responseTf)
 
 const hashTf = facade.hashTransaction(txTf)
 
-await waitTransactionStatus(hashTf.toString(), NODE_URL, "confirmed")
+await waitTxStatus(hashTf.toString(), NODE_URL, "confirmed")

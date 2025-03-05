@@ -11,9 +11,7 @@ from symbolchain.facade.SymbolFacade import (
   Hash256,
 )
 from symbolchain.sc import Amount, Signature, TransferTransactionV1
-from functions import (
-  convert_hex_values_in_object,
-)
+from convert_hex_values import convert_hex_values
 
 def main() -> None:
   # dotenvの設定
@@ -125,7 +123,7 @@ def main() -> None:
   # 16進数のアドレスとメッセージを変換する処理を関数化
   print("変換したデータを表示")  
   print("トランザクション情報JSON表示",
-    json.dumps(convert_hex_values_in_object(tx_info), indent=2))
+    json.dumps(convert_hex_values(tx_info), indent=2))
 
 
 if __name__ == "__main__":

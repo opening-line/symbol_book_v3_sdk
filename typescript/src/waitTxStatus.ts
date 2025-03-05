@@ -1,5 +1,5 @@
 //トランザクションハッシュを指定してトランザクションの状態を確認する関数
-export async function waitTransactionStatus(
+export async function waitTxStatus(
   hash: string,
   nodeUrl: string,
   transactionStatus: "confirmed" | "unconfirmed" | "partial",

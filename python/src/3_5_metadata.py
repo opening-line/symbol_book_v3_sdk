@@ -21,10 +21,8 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-from functions import (
-  convert_hex_values_in_object,
-  wait_transaction_status,
-)
+from convert_hex_values import convert_hex_values
+from wait_tx_status import wait_tx_status
 
 async def main() -> None:
   dotenv.load_dotenv()
@@ -103,7 +101,7 @@ async def main() -> None:
 
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 
@@ -119,7 +117,7 @@ async def main() -> None:
   print(
     "メタデータ情報アドレス検索結果JSON表示",
     json.dumps(
-      convert_hex_values_in_object(metadata_info1), indent=2
+      convert_hex_values(metadata_info1), indent=2
     )
   )
 
@@ -137,7 +135,7 @@ async def main() -> None:
   print(
     "メタデータ情報メタデータキー検索結果JSON表示",    
     json.dumps(
-      convert_hex_values_in_object(metadata_info2), indent=2
+      convert_hex_values(metadata_info2), indent=2
     )
   )
 

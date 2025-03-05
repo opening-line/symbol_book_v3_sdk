@@ -18,9 +18,7 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-from functions import (
-  wait_transaction_status,
-)
+from wait_tx_status import wait_tx_status
 from binascii import unhexlify
 
 async def main() -> None:
@@ -147,7 +145,7 @@ async def main() -> None:
     restored_tx_agg
   )
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash__restored_tx_agg), NODE_URL, "confirmed"
   )
 

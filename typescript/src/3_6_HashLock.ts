@@ -8,11 +8,9 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  createAndSendTransaction,
-  convertHexValuesInObject
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { convertHexValues } from "./convertHexValues"
+import { createAndSendTx } from "./createAndSendTx"
 
 dotenv.config()
 
@@ -102,12 +100,12 @@ const hashLockDescriptor =
 
 console.log("===ハッシュロックトランザクション===")
 // アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化
-const hashLock = await createAndSendTransaction(
+const hashLock = await createAndSendTx(
   hashLockDescriptor,
   accountA,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashLock.toString(),
   NODE_URL,
   "confirmed",
@@ -132,7 +130,7 @@ const responseAgg = await fetch(
 console.log("アナウンス結果", responseAgg)
 
 // partial（オンチェーン上で連署待ちの状態）の確認
-await waitTransactionStatus(hashAgg.toString(), NODE_URL, "partial")
+await waitTxStatus(hashAgg.toString(), NODE_URL, "partial")
 
 // アカウントBが連署を必要とするトランザクションを検出する処理
 const query = new URLSearchParams({
@@ -151,7 +149,7 @@ const txSearchInfo = await fetch(
 
 console.log(
   "アグリゲートボンデッドトランザクションJSON表示",
-  JSON.stringify(convertHexValuesInObject(txSearchInfo), null, 2),
+  JSON.stringify(convertHexValues(txSearchInfo), null, 2),
 )
 
 const hashAggString = txSearchInfo.data[0].meta.aggregateHash
@@ -178,4 +176,4 @@ const responseCos = await fetch(
 
 console.log("アナウンス結果", responseCos)
 
-await waitTransactionStatus(hashAggString, NODE_URL, "confirmed")
+await waitTxStatus(hashAggString, NODE_URL, "confirmed")

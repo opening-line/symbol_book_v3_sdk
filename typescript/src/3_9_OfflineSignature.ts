@@ -8,9 +8,7 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
 
 dotenv.config()
 
@@ -135,7 +133,7 @@ console.log("アナウンス結果", responseRestoredTxAgg)
 
 const hashRestoredTxAgg = facade.hashTransaction(restoredTxAgg)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashRestoredTxAgg.toString(),
   NODE_URL,
   "confirmed",

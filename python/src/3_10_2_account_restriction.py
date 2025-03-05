@@ -19,11 +19,9 @@ from symbolchain.sc import (
   AccountOperationRestrictionTransactionV1,
 )
 
-from functions import (
-  wait_transaction_status,
-  send_transaction,
-  send_transfer_fees
-)
+from wait_tx_status import wait_tx_status
+from send_tx import send_tx
+from send_transfer_fees import send_transfer_fees
 
 async def main() -> None:
   load_dotenv()
@@ -70,7 +68,7 @@ async def main() -> None:
   # 手数料を送付するトランザクションを生成、署名、アナウンス
   hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -98,9 +96,9 @@ async def main() -> None:
     })
 
   print("===アカウント受信禁止トランザクション===")
-  hash_rr1: Hash256 = send_transaction(tx_rr1, restricted_account1)
+  hash_rr1: Hash256 = send_tx(tx_rr1, restricted_account1)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_rr1), NODE_URL, "confirmed"
   )
 
@@ -119,9 +117,9 @@ async def main() -> None:
 
   print("===確認用アカウント受信禁止トランザクション===")
   print("承認結果がSuccessではなくFailure_xxxになれば成功")
-  hash_tf1: Hash256 = send_transaction(tx_tf1, account_a)
+  hash_tf1: Hash256 = send_tx(tx_tf1, account_a)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf1), NODE_URL, "confirmed"
   )
 
@@ -148,9 +146,9 @@ async def main() -> None:
     })
 
   print("===モザイク受信禁止トランザクション===")
-  hash_rr2: Hash256 = send_transaction(tx_rr2, restricted_account2)
+  hash_rr2: Hash256 = send_tx(tx_rr2, restricted_account2)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_rr2), NODE_URL, "confirmed"
   )
 
@@ -173,9 +171,9 @@ async def main() -> None:
 
   print("===確認用モザイク受信禁止トランザクション===")
   print("承認結果がSuccessではなくFailure_xxxになれば成功")
-  hash_tf2: Hash256 = send_transaction(tx_tf2, account_a)
+  hash_tf2: Hash256 = send_tx(tx_tf2, account_a)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf2), NODE_URL, "confirmed"
   )
 
@@ -204,9 +202,9 @@ async def main() -> None:
     })
 
   print("===トランザクション送信禁止トランザクション===")
-  hash_rr3: Hash256 = send_transaction(tx_rr3, restricted_account3)
+  hash_rr3: Hash256 = send_tx(tx_rr3, restricted_account3)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_rr3), NODE_URL, "confirmed"
   )
 
@@ -226,9 +224,9 @@ async def main() -> None:
 
   print("===確認用トランザクション送信禁止トランザクション===")
   print("承認結果がSuccessではなくFailure_xxxになれば成功")
-  hash_tf3: Hash256 = send_transaction(tx_tf3, restricted_account3)
+  hash_tf3: Hash256 = send_tx(tx_tf3, restricted_account3)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf3), NODE_URL, "confirmed"
   )
 

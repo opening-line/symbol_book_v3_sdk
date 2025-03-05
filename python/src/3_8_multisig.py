@@ -19,10 +19,8 @@ from symbolchain.sc import (
   MultisigAccountModificationTransactionV1,
 )
 
-from functions import (
-  wait_transaction_status,
-  send_transfer_fees
-)
+from wait_tx_status import wait_tx_status
+from send_transfer_fees import send_transfer_fees
 
 async def main() -> None:
   load_dotenv()
@@ -63,7 +61,7 @@ async def main() -> None:
   # 手数料を送付するトランザクションを生成、署名、アナウンス
   hash_pre: Hash256 = send_transfer_fees(account_a, recipient_addresses, fee_amount)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_pre), NODE_URL, "confirmed"
   )
 
@@ -140,7 +138,7 @@ async def main() -> None:
 
   hash_mod: Hash256 = facade.hash_transaction(tx_mod)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_mod), NODE_URL, "confirmed"
   )
 
@@ -201,7 +199,7 @@ async def main() -> None:
 
   hash_tf: Hash256 = facade.hash_transaction(tx_tf)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_tf), NODE_URL, "confirmed"
   )
 

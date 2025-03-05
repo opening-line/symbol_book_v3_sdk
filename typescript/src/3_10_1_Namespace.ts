@@ -10,10 +10,8 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  convertHexValuesInObject
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { convertHexValues } from "./convertHexValues"
 
 dotenv.config()
 
@@ -137,7 +135,7 @@ console.log("アナウンス結果", responseAgg)
 
 const hashAgg = facade.hashTransaction(txAgg)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashAgg.toString(),
   NODE_URL,
   "confirmed",
@@ -160,5 +158,5 @@ const nameSpaceInfo = await fetch(
 
 console.log(
   "ネームスペース情報JSON表示",
-  JSON.stringify(convertHexValuesInObject(nameSpaceInfo), null, 2),
+  JSON.stringify(convertHexValues(nameSpaceInfo), null, 2),
 )

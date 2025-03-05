@@ -10,11 +10,9 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  createAndSendTransaction,
-  sendTransferFees
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { createAndSendTx } from "./createAndSendTx"
+import { sendTransferFees } from "./sendTransferFees"
 
 dotenv.config()
 
@@ -50,7 +48,7 @@ console.log("===事前手数料転送トランザクション===");
 // 手数料を送付するトランザクションを生成、署名、アナウンス
 const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -157,7 +155,7 @@ console.log("アナウンス結果", responseGmr)
 
 const hashGmr = facade.hashTransaction(txGmr)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashGmr.toString(),
   NODE_URL,
   "confirmed",
@@ -238,7 +236,7 @@ console.log("アナウンス結果", responseMar)
 
 const hashMar = facade.hashTransaction(txMar)
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashMar.toString(),
   NODE_URL,
   "confirmed",
@@ -259,12 +257,12 @@ const transferDescriptor1 =
 console.log(
   "===制限付きモザイクが許可されたアカウントへの転送トランザクション===",
 )
-const hashTf1 = await createAndSendTransaction(
+const hashTf1 = await createAndSendTx(
   transferDescriptor1,
   allowedAccount1,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashTf1.toString(),
   NODE_URL,
   "confirmed",
@@ -287,12 +285,12 @@ console.log(
   "===制限付きモザイクが許可されてないアカウントへの転送トランザクション===",
 )
 console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
-const hashTf2 = await createAndSendTransaction(
+const hashTf2 = await createAndSendTx(
   transferDescriptor2,
   allowedAccount1,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashTf2.toString(),
   NODE_URL,
   "confirmed",

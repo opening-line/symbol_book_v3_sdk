@@ -3,7 +3,7 @@ import requests
 from typing import Literal
 
 # トランザクションハッシュを指定してトランザクションの状態を確認する関数
-async def wait_transaction_status(
+async def wait_tx_status(
   hash: str,
   node_url: str,
   transaction_status: Literal[

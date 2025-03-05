@@ -18,11 +18,9 @@ from symbolchain.sc import (
   HashLockTransactionV1,
 )
 
-from functions import (
-  convert_hex_values_in_object,
-  wait_transaction_status,
-  send_transaction,
-)
+from convert_hex_values import convert_hex_values
+from wait_tx_status import wait_tx_status
+from send_tx import send_tx
 
 async def main() -> None:
   load_dotenv()
@@ -119,11 +117,11 @@ async def main() -> None:
 
   print("===ハッシュロックトランザクション===")
   # アグリゲートでないトランザクションは生成からアナウンスまで同じ処理なので関数化
-  hash_lock_hash: Hash256 = send_transaction(
+  hash_lock_hash: Hash256 = send_tx(
     hash_lock_tx, account_a
   )
 
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_lock_hash), NODE_URL, "confirmed"
   )
 
@@ -143,7 +141,7 @@ async def main() -> None:
   print("アナウンス結果", response_agg)
 
   # partial（オンチェーン上で連署待ちの状態）の確認
-  await wait_transaction_status(str(hash_agg), NODE_URL, "partial")
+  await wait_tx_status(str(hash_agg), NODE_URL, "partial")
 
   # アカウントBが連署を必要とするトランザクションを検出する処理
   query = {
@@ -159,7 +157,7 @@ async def main() -> None:
   print(
     "アグリゲートボンデッドトランザクションJSON表示",    
     json.dumps(
-      convert_hex_values_in_object(tx_search_info), indent=2
+      convert_hex_values(tx_search_info), indent=2
     )
   )
   
@@ -189,7 +187,7 @@ async def main() -> None:
 
   print("アナウンス結果", response_cos)
 
-  await wait_transaction_status(
+  await wait_tx_status(
     hash_agg_string,
     NODE_URL,
     "confirmed",

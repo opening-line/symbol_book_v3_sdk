@@ -11,7 +11,7 @@ const NODE_URL = process.env.NODE_URL!
 const facade = new SymbolFacade(Network.TESTNET)
 
 //descriptorからトランザクションの生成、署名、アナウンスを行う関数
-export async function createAndSendTransaction(
+export async function createAndSendTx(
   descriptor: any,
   signAccount: SymbolAccount,
 ): Promise<Hash256> {

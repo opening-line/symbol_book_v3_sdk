@@ -23,10 +23,8 @@ from symbolchain.sc import (
   AggregateCompleteTransactionV2,
 )
 
-from functions import (
-  convert_hex_values_in_object,
-  wait_transaction_status,
-)
+from convert_hex_values import convert_hex_values
+from wait_tx_status import wait_tx_status
 
 async def main() -> None:
   load_dotenv()
@@ -140,7 +138,7 @@ async def main() -> None:
   hash_agg: Hash256 = facade.hash_transaction(tx_agg)
 
   # トランザクションの状態を確認する処理を関数化
-  await wait_transaction_status(
+  await wait_tx_status(
     str(hash_agg), NODE_URL, "confirmed"
   )
 
@@ -156,7 +154,7 @@ async def main() -> None:
   print(
     "モザイク情報JSON表示",    
     json.dumps(
-      convert_hex_values_in_object(mosaic_info), indent=2
+      convert_hex_values(mosaic_info), indent=2
     )
   )
 

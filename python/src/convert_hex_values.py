@@ -4,7 +4,7 @@ from binascii import unhexlify
 
 
 # オブジェクト内のアドレス、メッセージ、メタデータの値を16進数文字列から元の値に変換する
-def convert_hex_values_in_object(obj):
+def convert_hex_values(obj):
   facade = SymbolFacade("testnet")
 
   if isinstance(obj, dict):
@@ -28,11 +28,11 @@ def convert_hex_values_in_object(obj):
           result[key] = value
       # ネストされたオブジェクトも再帰的に処理
       elif isinstance(value, (dict, list)):
-        result[key] = convert_hex_values_in_object(value)
+        result[key] = convert_hex_values(value)
       else:
         result[key] = value
     return result
   elif isinstance(obj, list):
-    return [convert_hex_values_in_object(item) for item in obj]
+    return [convert_hex_values(item) for item in obj]
   else:
     return obj

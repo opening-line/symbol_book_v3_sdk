@@ -8,11 +8,9 @@ import {
 } from "symbol-sdk/symbol"
 
 import dotenv from "dotenv"
-import {
-  waitTransactionStatus,
-  createAndSendTransaction,
-  sendTransferFees
-} from "./functions"
+import { waitTxStatus } from "./waitTxStatus"
+import { createAndSendTx } from "./createAndSendTx"
+import { sendTransferFees } from "./sendTransferFees"
 
 dotenv.config()
 
@@ -50,7 +48,7 @@ console.log("===事前手数料転送トランザクション===");
 // 手数料を送付するトランザクションを生成、署名、アナウンス
 const hashPre = await sendTransferFees(accountA, recipientAddresses, feeAmount);
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashPre.toString(),
   NODE_URL,
   "confirmed",
@@ -75,12 +73,12 @@ const accountAddressRestrictionDescriptor =
   )
 
 console.log("===アカウント受信禁止トランザクション===")
-const hashRr1 = await createAndSendTransaction(
+const hashRr1 = await createAndSendTx(
   accountAddressRestrictionDescriptor,
   restrictedAccount1,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashRr1.toString(),
   NODE_URL,
   "confirmed",
@@ -97,12 +95,12 @@ const transferDescriptor1 =
 
 console.log("===確認用アカウント受信禁止トランザクション===")
 console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
-const hashTf1 = await createAndSendTransaction(
+const hashTf1 = await createAndSendTx(
   transferDescriptor1,
   accountA,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashTf1.toString(),
   NODE_URL,
   "confirmed",
@@ -126,12 +124,12 @@ const accountMosaicRestrictionDescriptor =
   )
   
 console.log("===モザイク受信禁止トランザクション===")
-const hashRr2 = await createAndSendTransaction(
+const hashRr2 = await createAndSendTx(
   accountMosaicRestrictionDescriptor,
   restrictedAccount2,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashRr2.toString(),
   NODE_URL,
   "confirmed",
@@ -152,12 +150,12 @@ const transferDescriptor2 =
 
 console.log("===確認用モザイク受信禁止トランザクション===")
 console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
-const hashTf2 = await createAndSendTransaction(
+const hashTf2 = await createAndSendTx(
   transferDescriptor2,
   accountA,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashTf2.toString(),
   NODE_URL,
   "confirmed",
@@ -184,12 +182,12 @@ const accountOperationRestrictionDescriptor =
   )
 
 console.log("===トランザクション送信禁止トランザクション===")
-const hashRr3 = await createAndSendTransaction(
+const hashRr3 = await createAndSendTx(
   accountOperationRestrictionDescriptor,
   restrictedAccount3,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashRr3.toString(),
   NODE_URL,
   "confirmed",
@@ -206,12 +204,12 @@ const transferDescriptor3 =
   
 console.log("===確認用トランザクション送信禁止トランザクション===")
 console.log("承認結果がSuccessではなくFailure_xxxになれば成功")
-const hashTf3 = await createAndSendTransaction(
+const hashTf3 = await createAndSendTx(
   transferDescriptor3,
   restrictedAccount3,
 )
 
-await waitTransactionStatus(
+await waitTxStatus(
   hashTf3.toString(),
   NODE_URL,
   "confirmed",

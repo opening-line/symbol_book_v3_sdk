@@ -42,10 +42,10 @@ async def main() -> None:
   )
 
   network_time = requests.get(f"{NODE_URL}/node/time").json()
-  receiveTimestamp: int = int(
+  receive_timestamp: int = int(
     network_time["communicationTimestamps"]["receiveTimestamp"]
   )
-  deadline_timestamp: int = receiveTimestamp + (2 * 60 * 60 * 1000)
+  deadline_timestamp: int = receive_timestamp + (2 * 60 * 60 * 1000)
 
   # モザイク定義用のフラグ値
   mosaic_flags_value: MosaicFlags = (

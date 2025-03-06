@@ -33,10 +33,10 @@ def main() -> None:
 
   # ネットワークの現在時刻を取得
   network_time = requests.get(f"{NODE_URL}/node/time").json()
-  receiveTimestamp: int = int(
+  receive_timestamp: int = int(
     network_time["communicationTimestamps"]["receiveTimestamp"]
   )
-  deadline_timestamp: int = receiveTimestamp + (
+  deadline_timestamp: int = receive_timestamp + (
     2 * 60 * 60 * 1000
   )  # 2時間後（ミリ秒単位）
 

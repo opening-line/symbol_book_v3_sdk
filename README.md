@@ -2,12 +2,12 @@
 
 ## 動かし方
 
-### Typescrypt  
+### Typescript  
 前提：Node.jsがインストールされていること。動作確認済みバージョンは、22.11.0です。
 
-`typescrypt`フォルダに移動し、依存パッケージをインストール。
+`typescript`フォルダに移動し、依存パッケージをインストール。
 ```
-$ cd typescrypt
+$ cd typescript
 $ npm i
 ```
 
@@ -26,7 +26,7 @@ PRIVATE_KEY_B=56*************************78
 NODE_URL=https://sym-test-03.opening-line.jp:3001
 ```
 
-`typescrypt`フォルダから実行する。
+`typescript`フォルダから実行する。
 
 ```bash
 $ npx tsx src/<実行ファイル> 

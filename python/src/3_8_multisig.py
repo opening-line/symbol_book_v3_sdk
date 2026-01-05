@@ -15,7 +15,7 @@ from symbolchain.sc import (
   Signature,
   Cosignature,
   TransferTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
   MultisigAccountModificationTransactionV1,
 )
 
@@ -92,9 +92,9 @@ async def main() -> None:
   )
 
   tx_mod: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs_mod,
       "transactions_hash": inner_transaction_hash_mod,
       "signer_public_key": multisig_account.public_key,
@@ -161,9 +161,9 @@ async def main() -> None:
   )
 
   tx_tf: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs_tf,
       "transactions_hash": inner_transaction_hash_tf,
       # 起案者であるcosigAccount1を指定

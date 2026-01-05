@@ -20,7 +20,7 @@ from symbolchain.sc import (
   TransferTransactionV1,
   MosaicDefinitionTransactionV1,
   MosaicSupplyChangeTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
 )
 
 from convert_hex_values import convert_hex_values
@@ -104,9 +104,9 @@ async def main() -> None:
 
   # アグリゲートトランザクションを生成
   tx_agg: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs,  # インナートランザクションを指定
       # インナートランザクションのハッシュを指定
       "transactions_hash": inner_transaction_hash,

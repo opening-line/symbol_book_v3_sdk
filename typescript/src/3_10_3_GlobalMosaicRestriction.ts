@@ -124,7 +124,7 @@ const innerTransactionHashGmr = SymbolFacade.hashEmbeddedTransactions(
 )
 
 const aggregateDescriptorGmr =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHashGmr,
     innerTxsGmr,
   )
@@ -205,7 +205,7 @@ const innerTransactionHashMar = SymbolFacade.hashEmbeddedTransactions(
 )
 
 const aggregateDescriptorMar =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHashMar,
     innerTxsMar,
   )

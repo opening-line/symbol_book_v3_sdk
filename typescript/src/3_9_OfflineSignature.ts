@@ -57,7 +57,7 @@ const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
 const aggregateDescriptor =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHash,
     innerTransactions,
   )
@@ -89,7 +89,7 @@ console.log("ペイロード",payloadAgg)
 // ペイロードからTxの復元
 console.log("ペイロードからTxの復元実施…")
 const restoredTxAgg =
-  models.AggregateCompleteTransactionV2.deserialize(
+  models.AggregateCompleteTransactionV3.deserialize(
     utils.hexToUint8(payloadAgg),
   )
 

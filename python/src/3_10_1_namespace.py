@@ -19,7 +19,7 @@ from symbolchain.sc import (
   Signature,
   NamespaceRegistrationTransactionV1,
   AddressAliasTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
   TransferTransactionV1
 )
 
@@ -116,9 +116,9 @@ async def main() -> None:
   )
 
   tx_agg: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,

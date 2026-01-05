@@ -64,7 +64,7 @@ const innerTransactionHash =
   SymbolFacade.hashEmbeddedTransactions(innerTransactions)
 
 const aggregateDescriptor =
-  new descriptors.AggregateBondedTransactionV2Descriptor(
+  new descriptors.AggregateBondedTransactionV3Descriptor(
     innerTransactionHash,
     innerTransactions,
   )

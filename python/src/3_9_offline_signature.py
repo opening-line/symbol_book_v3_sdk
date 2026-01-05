@@ -15,7 +15,7 @@ from symbolchain.sc import (
   Signature,
   Cosignature,
   TransferTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
 )
 
 from wait_tx_status import wait_tx_status
@@ -74,9 +74,9 @@ async def main() -> None:
 
   # アグリゲートボンデッドトランザクションを生成
   tx_agg: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,
@@ -103,7 +103,7 @@ async def main() -> None:
 
   # ペイロードからTxの復元
   print("ペイロードからTxの復元実施…")
-  restored_tx_agg = AggregateCompleteTransactionV2.deserialize(
+  restored_tx_agg = AggregateCompleteTransactionV3.deserialize(
     unhexlify(payloadAgg)
   )
 

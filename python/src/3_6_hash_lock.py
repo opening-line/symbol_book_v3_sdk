@@ -14,7 +14,7 @@ from symbolchain.sc import (
   Amount,
   Signature,
   TransferTransactionV1,
-  AggregateBondedTransactionV2,
+  AggregateBondedTransactionV3,
   HashLockTransactionV1,
 )
 
@@ -80,9 +80,9 @@ async def main() -> None:
 
   # アグリゲートボンデッドトランザクションを生成
   tx_agg: (
-    AggregateBondedTransactionV2
+    AggregateBondedTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_bonded_transaction_v2",
+      "type": "aggregate_bonded_transaction_v3",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,

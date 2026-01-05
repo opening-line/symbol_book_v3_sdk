@@ -88,7 +88,7 @@ const innerTransactionHash =
 
 const aggregateDescriptor =
   // アグリゲートトランザクション
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHash, //インナートランザクションのハッシュを指定
     innerTransactions, //インナートランザクションを指定
   )

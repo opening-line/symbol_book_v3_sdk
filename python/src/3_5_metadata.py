@@ -18,7 +18,7 @@ from symbolchain.sc import (
   Amount,
   Signature,
   AccountMetadataTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
 )
 
 from convert_hex_values import convert_hex_values
@@ -73,9 +73,9 @@ async def main() -> None:
   )
 
   tx_agg: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs,
       "transactions_hash": inner_transaction_hash,
       "signer_public_key": account_a.public_key,

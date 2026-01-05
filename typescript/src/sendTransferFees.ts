@@ -48,7 +48,7 @@ import {
     );
   
     const aggregateDescriptorPre =
-      new descriptors.AggregateCompleteTransactionV2Descriptor(
+      new descriptors.AggregateCompleteTransactionV3Descriptor(
         innerTransactionHashPre,
         innerTxsPre,
       );

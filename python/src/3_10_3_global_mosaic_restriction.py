@@ -19,7 +19,7 @@ from symbolchain.sc import (
   MosaicNonce,
   MosaicRestrictionType,
   TransferTransactionV1,
-  AggregateCompleteTransactionV2,
+  AggregateCompleteTransactionV3,
   MosaicDefinitionTransactionV1,
   MosaicSupplyChangeTransactionV1,
   MosaicGlobalRestrictionTransactionV1,
@@ -136,9 +136,9 @@ async def main() -> None:
   )
 
   tx_gmr: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs_gmr,
       "transactions_hash": inner_transaction_hash_gmr,
       "signer_public_key": allowed_account1.public_key,
@@ -212,9 +212,9 @@ async def main() -> None:
   )
 
   tx_Mar: (
-    AggregateCompleteTransactionV2
+    AggregateCompleteTransactionV3
   ) = facade.transaction_factory.create({
-      "type": "aggregate_complete_transaction_v2",
+      "type": "aggregate_complete_transaction_v3",
       "transactions": txs_Mar,
       "transactions_hash": inner_transaction_hash_Mar,
       "signer_public_key": allowed_account1.public_key,

@@ -38,7 +38,7 @@ def send_transfer_fees(signAccount: SymbolAccount, recipientAddresses: list, fee
   inner_transaction_hash_pre = facade.hash_embedded_transactions(txs_pre)
 
   tx_pre = facade.transaction_factory.create({
-    "type": "aggregate_complete_transaction_v2",
+    "type": "aggregate_complete_transaction_v3",
     "transactions": txs_pre,
     "transactions_hash": inner_transaction_hash_pre,
     "signer_public_key": signAccount.public_key,

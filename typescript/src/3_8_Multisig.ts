@@ -85,12 +85,12 @@ const innerTransactionHashMod = SymbolFacade.hashEmbeddedTransactions(
 )
 
 const aggregateDescriptorMod =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHashMod,
     innerTxsModification,
   )
 
-const txMod = models.AggregateCompleteTransactionV2.deserialize(
+const txMod = models.AggregateCompleteTransactionV3.deserialize(
   facade
     .createTransactionFromTypedDescriptor(
       aggregateDescriptorMod,
@@ -161,12 +161,12 @@ const innerTransactionHashTf = SymbolFacade.hashEmbeddedTransactions(
 )
 
 const aggregateDescriptorTf =
-  new descriptors.AggregateCompleteTransactionV2Descriptor(
+  new descriptors.AggregateCompleteTransactionV3Descriptor(
     innerTransactionHashTf,
     innerTxsTranfer,
   )
 
-const txTf = models.AggregateCompleteTransactionV2.deserialize(
+const txTf = models.AggregateCompleteTransactionV3.deserialize(
   facade
     .createTransactionFromTypedDescriptor(
       aggregateDescriptorTf,
